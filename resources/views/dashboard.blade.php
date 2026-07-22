@@ -138,7 +138,6 @@
 @include('dashboard.modals.user')
 @include('dashboard.modals.doctor')
 @include('dashboard.modals.animal')
-@include('dashboard.modals.report')
 @include('dashboard.modals.farm')
 
 <script>
