@@ -107,6 +107,11 @@
                     </a>
                 @endif
             </div>
+
+            <div class="mt-3 text-center text-muted">
+                Need an admin account?
+                <a href="{{ route('admin.signup') }}" class="text-decoration-none" style="color: #2e7d32;">Sign up</a>
+            </div>
         </form>
     </div>
 </body>

@@ -11,16 +11,11 @@ class Farm extends Model
 
     protected $fillable = [
         'user_id',          // This maps to the user who owns the farm
-        'farm_name',        // This is 'farm_name' in your DB, not 'name'
+        'name',
         'owner_name',
-        'owner_id',         // This might be the same as user_id
         'location',
-        'latitude',
-        'longitude',
         'size',
         'description',
-        'registration_date',
-        // Add these if they exist in your DB
         'established_year',
         'coordinates',
         'facilities',
@@ -31,9 +26,6 @@ class Farm extends Model
     protected $casts = [
         'facilities' => 'array',
         'is_active' => 'boolean',
-        'latitude' => 'decimal:8',
-        'longitude' => 'decimal:8',
-        'size' => 'decimal:2',
     ];
 
     public function user()

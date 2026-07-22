@@ -17,7 +17,7 @@ class FarmController extends Controller
                 return $query->where('user_id', $request->user()->id);
             })
             ->when($request->search, function ($query, $search) {
-                return $query->where('farm_name', 'like', "%{$search}%")  // Changed: name -> farm_name
+                return $query->where('name', 'like', "%{$search}%")
                     ->orWhere('location', 'like', "%{$search}%")
                     ->orWhere('owner_name', 'like', "%{$search}%");
             })
@@ -33,15 +33,14 @@ class FarmController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'farm_name' => 'required|string|max:255',        // Changed: name -> farm_name
+            'name' => 'required|string|max:255',
             'location' => 'required|string|max:255',
             'owner_name' => 'required|string|max:255',
-            'owner_id' => 'nullable|exists:users,id',
             'size' => 'nullable|string|max:100',
-            'latitude' => 'nullable|numeric',
-            'longitude' => 'nullable|numeric',
             'description' => 'nullable|string',
-            'registration_date' => 'nullable|date',
+            'established_year' => 'nullable|string|max:255',
+            'coordinates' => 'nullable|string|max:255',
+            'facilities' => 'nullable|array',
         ]);
 
         if ($validator->fails()) {
@@ -54,22 +53,22 @@ class FarmController extends Controller
         try {
             $farm = Farm::create([
                 'user_id' => $request->user()->id,
-                'farm_name' => $request->farm_name,          // Changed: name -> farm_name
+                'name' => $request->name,
                 'owner_name' => $request->owner_name,
-                'owner_id' => $request->owner_id ?? $request->user()->id,
                 'location' => $request->location,
-                'latitude' => $request->latitude,
-                'longitude' => $request->longitude,
                 'size' => $request->size,
                 'description' => $request->description,
-                'registration_date' => $request->registration_date ?? now(),
+                'established_year' => $request->established_year,
+                'coordinates' => $request->coordinates,
+                'facilities' => $request->facilities,
                 'is_active' => true,
             ]);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Farm created successfully',
-                'data' => $farm
+                'data' => $farm,
+                'stats' => $this->farmStats(),
             ], 201);
 
         } catch (\Exception $e) {
@@ -123,13 +122,14 @@ class FarmController extends Controller
             }
 
             $validator = Validator::make($request->all(), [
-                'farm_name' => 'sometimes|string|max:255',
+                'name' => 'sometimes|string|max:255',
                 'location' => 'sometimes|string|max:255',
                 'owner_name' => 'sometimes|string|max:255',
                 'size' => 'nullable|string|max:100',
-                'latitude' => 'nullable|numeric',
-                'longitude' => 'nullable|numeric',
                 'description' => 'nullable|string',
+                'established_year' => 'nullable|string|max:255',
+                'coordinates' => 'nullable|string|max:255',
+                'facilities' => 'nullable|array',
                 'is_active' => 'sometimes|boolean',
             ]);
 
@@ -140,12 +140,13 @@ class FarmController extends Controller
                 ], 422);
             }
 
-            $farm->update($request->all());
+            $farm->update($validator->validated());
 
             return response()->json([
                 'success' => true,
                 'message' => 'Farm updated successfully',
-                'data' => $farm
+                'data' => $farm,
+                'stats' => $this->farmStats(),
             ]);
 
         } catch (\Exception $e) {
@@ -173,7 +174,8 @@ class FarmController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Farm deleted successfully'
+                'message' => 'Farm deleted successfully',
+                'stats' => $this->farmStats(),
             ]);
 
         } catch (\Exception $e) {
@@ -201,5 +203,19 @@ class FarmController extends Controller
                 'inactive' => (clone $query)->where('is_active', false)->count(),
             ]
         ]);
+    }
+
+    private function farmStats(): array
+    {
+        $query = Farm::query();
+
+        if (auth()->user()->role !== 'admin') {
+            $query->where('user_id', auth()->id());
+        }
+
+        return [
+            'total' => $query->count(),
+            'active' => (clone $query)->where('is_active', true)->count(),
+        ];
     }
 }

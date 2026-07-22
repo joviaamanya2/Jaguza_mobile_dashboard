@@ -8,6 +8,8 @@ use App\Http\Controllers\DashboardController;
 Route::middleware(['guest'])->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
+    Route::get('/admin/signup', [AuthController::class, 'showSignup'])->name('admin.signup');
+    Route::post('/admin/signup', [AuthController::class, 'signup'])->name('admin.signup.store');
 });
 
 // Protected admin routes
@@ -51,6 +53,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::delete('/diseases/{id}', [\App\Http\Controllers\Api\DiseaseController::class, 'destroy']);
 
         // Farms
+        Route::get('/farms/{id}', [\App\Http\Controllers\Api\FarmController::class, 'show']);
         Route::post('/farms', [\App\Http\Controllers\Api\FarmController::class, 'store']);
         Route::put('/farms/{id}', [\App\Http\Controllers\Api\FarmController::class, 'update']);
         Route::delete('/farms/{id}', [\App\Http\Controllers\Api\FarmController::class, 'destroy']);

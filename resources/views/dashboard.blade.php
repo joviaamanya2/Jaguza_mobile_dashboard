@@ -765,7 +765,7 @@
       <div class="stat-card">
         <div class="stat-icon" style="background:#fff3e0;color:#e65100;"><i class="fas fa-warehouse"></i></div>
         <div class="stat-body">
-          <h3>{{ number_format($stats['total_farms'] ?? 0) }}</h3>
+          <h3 id="dashboard-farms-count">{{ number_format($stats['total_farms'] ?? 0) }}</h3>
           <p>Registered Farms</p>
           <div class="stat-trend trend-up"><i class="fas fa-arrow-up"></i> {{ number_format($farmGrowthPercent ?? 0, 1) }}% growth</div>
         </div>
@@ -1151,28 +1151,28 @@
         <div class="stat-card">
             <div class="stat-icon" style="background:#e3f2fd;color:#0d47a1;"><i class="fas fa-warehouse"></i></div>
             <div class="stat-body">
-                <h3>{{ number_format($total_farms ?? 0) }}</h3>
+                <h3 id="farms-total-count">{{ number_format($totalFarms ?? 0) }}</h3>
                 <p>Total Farms</p>
             </div>
         </div>
         <div class="stat-card">
             <div class="stat-icon" style="background:#e8f5e9;color:#2e7d32;"><i class="fas fa-check-circle"></i></div>
             <div class="stat-body">
-                <h3>{{ number_format($active_farms ?? 0) }}</h3>
+                <h3 id="farms-active-count">{{ number_format($activeFarms ?? 0) }}</h3>
                 <p>Active Farms</p>
             </div>
         </div>
         <div class="stat-card">
             <div class="stat-icon" style="background:#fce4ec;color:#c62828;"><i class="fas fa-times-circle"></i></div>
             <div class="stat-body">
-                <h3>{{ number_format(($total_farms ?? 0) - ($active_farms ?? 0)) }}</h3>
+                <h3 id="farms-inactive-count">{{ number_format(($totalFarms ?? 0) - ($activeFarms ?? 0)) }}</h3>
                 <p>Inactive Farms</p>
             </div>
         </div>
         <div class="stat-card">
             <div class="stat-icon" style="background:#f3e5f5;color:#4a148c;"><i class="fas fa-pets"></i></div>
             <div class="stat-body">
-                <h3>{{ number_format($total_animals_on_farms ?? 0) }}</h3>
+                <h3>{{ number_format($totalAnimalsOnFarms ?? 0) }}</h3>
                 <p>Total Animals</p>
             </div>
         </div>
@@ -1184,12 +1184,12 @@
                 <thead>
                     <tr>
                         <th>#</th>
-                        <th>Farm</th>
+                        <th>Farm Name</th>
                         <th>Owner</th>
                         <th>Location</th>
-                        <th>Size</th>
+                        <th>Size (acres)</th>
                         <th>Animals</th>
-                        <th>Established</th>
+                        <th>Registered</th>
                         <th>Status</th>
                         <th>Actions</th>
                     </tr>
@@ -1198,25 +1198,14 @@
                     @forelse($farms as $farm)
                     <tr>
                         <td>{{ $loop->iteration }}</td>
-                        <td>
-                            <span style="font-weight:600;">{{ $farm->name }}</span>
-                            @if($farm->facilities)
-                            <br><small style="color:#6a7a8a;font-size:10px;">
-                                @foreach($farm->facilities as $facility)
-                                <span class="badge badge-blue" style="font-size:9px;padding:1px 6px;">{{ $facility }}</span>
-                                @endforeach
-                            </small>
-                            @endif
-                        </td>
-                        <td><strong>{{ $farm->farm_name }}</strong></td>
+                        <td><strong>{{ $farm->name ?? 'N/A' }}</strong></td>
                         <td>{{ $farm->owner_name ?? $farm->user->name ?? 'N/A' }}</td>
-                        <td>{{ $farm->location }}</td>
+                        <td>{{ $farm->location ?? 'N/A' }}</td>
                         <td>{{ $farm->size ?? 'N/A' }}</td>
-                        <td><strong>{{ $farm->farm_name ?? $farm->name ?? 'N/A' }}</strong></td>
                         <td>
                             <span class="badge badge-purple">{{ number_format($farm->animals->count() ?? 0) }}</span>
                         </td>
-                        <td>{{ $farm->established_year ?? 'N/A' }}</td>
+                        <td>{{ $farm->created_at ? \Carbon\Carbon::parse($farm->created_at)->format('M d, Y') : 'N/A' }}</td>
                         <td>
                             <span class="badge {{ ($farm->is_active ?? true) ? 'badge-green' : 'badge-red' }}">
                                 {{ ($farm->is_active ?? true) ? 'Active' : 'Inactive' }}
@@ -2249,6 +2238,7 @@ function navigate(pageId, title) {
 // ============================================
 
 const API_URL = '{{ url("/api/v1") }}';
+const ADMIN_URL = '{{ url("/admin") }}';
 const CSRF_TOKEN = '{{ csrf_token() }}';
 
 function getHeaders() {
@@ -2557,7 +2547,7 @@ function openAddFarmModal() {
 function editFarm(id) {
     showToast('Loading farm data...', 'info');
     
-    fetch(`${API_URL}/farms/${id}`, {
+    fetch(`${ADMIN_URL}/farms/${id}`, {
         headers: getHeaders()
     })
     .then(response => response.json())
@@ -2592,13 +2582,14 @@ function editFarm(id) {
 function deleteFarm(id) {
     if (!confirm('⚠️ Are you sure you want to delete this farm? This will also remove all associated animals.')) return;
     
-    fetch(`${API_URL}/farms/${id}`, {
+    fetch(`${ADMIN_URL}/farms/${id}`, {
         method: 'DELETE',
         headers: getHeaders()
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
+            updateFarmCountCards(data.stats);
             showToast('Farm deleted successfully!');
             setTimeout(() => location.reload(), 1000);
         } else {
@@ -2614,7 +2605,7 @@ function saveFarm() {
     const id = document.getElementById('farmId').value;
     
     const data = {
-        farm_name: document.getElementById('farm_name').value,
+        name: document.getElementById('farm_name').value,
         owner_name: document.getElementById('farm_owner').value,
         location: document.getElementById('farm_location').value,
         size: document.getElementById('farm_size').value,
@@ -2624,7 +2615,7 @@ function saveFarm() {
         facilities: selectedFacilities,
     };
     
-    const url = id ? `${API_URL}/farms/${id}` : `${API_URL}/farms`;
+    const url = id ? `${ADMIN_URL}/farms/${id}` : `${ADMIN_URL}/farms`;
     const method = id ? 'PUT' : 'POST';
     
     const submitBtn = document.getElementById('farmSubmitBtn');
@@ -2642,6 +2633,7 @@ function saveFarm() {
         submitBtn.textContent = id ? 'Update Farm' : 'Save Farm';
         
         if (data.success) {
+            updateFarmCountCards(data.stats);
             showToast(id ? 'Farm updated successfully!' : 'Farm created successfully!');
             closeModal('farmModal');
             setTimeout(() => location.reload(), 1000);
@@ -2661,6 +2653,24 @@ function saveFarm() {
         submitBtn.disabled = false;
         submitBtn.textContent = id ? 'Update Farm' : 'Save Farm';
         showToast('Network error: ' + error.message, 'error');
+    });
+}
+
+function updateFarmCountCards(stats) {
+    if (!stats) return;
+
+    const total = Number(stats.total || 0);
+    const active = Number(stats.active || 0);
+    const values = {
+        'dashboard-farms-count': total,
+        'farms-total-count': total,
+        'farms-active-count': active,
+        'farms-inactive-count': total - active,
+    };
+
+    Object.entries(values).forEach(([id, value]) => {
+        const element = document.getElementById(id);
+        if (element) element.textContent = value.toLocaleString();
     });
 }
 

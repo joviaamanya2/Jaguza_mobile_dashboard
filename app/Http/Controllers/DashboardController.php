@@ -58,6 +58,12 @@ class DashboardController extends Controller
         $sicknessGrowthPercent = $this->calculateGrowth(SicknessReport::class);
         $farmGrowthPercent = $this->calculateGrowth(Farm::class);
         $livestockGrowthPercent = $this->calculateGrowth(Animal::class);
+
+        // These values power the farm-page summary cards. Keep them separate
+        // from the limited list of recently created farms shown in the table.
+        $totalFarms = $stats['total_farms'];
+        $activeFarms = Farm::where('is_active', true)->count();
+        $totalAnimalsOnFarms = Animal::whereNotNull('farm_id')->count();
         
         $newDoctors = Doctor::whereMonth('created_at', now()->month)
             ->whereYear('created_at', now()->year)
@@ -101,6 +107,9 @@ class DashboardController extends Controller
             'sicknessGrowthPercent',
             'farmGrowthPercent',
             'livestockGrowthPercent',
+            'totalFarms',
+            'activeFarms',
+            'totalAnimalsOnFarms',
             'newDoctors',
             'newVideosThisWeek',
             'expiredAds',
@@ -237,7 +246,7 @@ class DashboardController extends Controller
 
     private function getFarms()
     {
-        return Farm::with('owner')->orderBy('created_at', 'desc')->limit(10)->get();
+        return Farm::with(['user', 'owner', 'animals'])->orderBy('created_at', 'desc')->limit(10)->get();
     }
 
     private function getAnimals()
