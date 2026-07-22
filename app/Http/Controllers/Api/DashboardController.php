@@ -129,7 +129,7 @@ class DashboardController extends Controller
 
     private function getRecentReports()
     {
-        return SicknessReport::with(['animal', 'reporter', 'doctor'])
+        return SicknessReport::with('user')
             ->orderBy('created_at', 'desc')
             ->limit(10)
             ->get();

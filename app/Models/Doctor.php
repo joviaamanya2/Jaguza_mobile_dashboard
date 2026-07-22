@@ -36,11 +36,6 @@ class Doctor extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function sicknessReports()
-    {
-        return $this->hasMany(SicknessReport::class);
-    }
-
     public function scopeAvailable($query)
     {
         return $query->where('is_available', true);

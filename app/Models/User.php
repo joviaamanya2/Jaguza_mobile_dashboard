@@ -89,7 +89,7 @@ class User extends Authenticatable
 
     public function sicknessReports()
     {
-        return $this->hasMany(SicknessReport::class, 'reported_by');
+        return $this->hasMany(SicknessReport::class, 'user_id');
     }
 
     public function sentMessages()

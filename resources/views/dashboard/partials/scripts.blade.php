@@ -573,9 +573,134 @@ function saveUser() {
 // OTHER MODAL FUNCTIONS
 // ============================================
 
-function openAddReportModal() { openModal('reportModal'); }
 function openAddDoctorModal() { openModal('doctorModal'); }
 function openAddAnimalModal() { openModal('animalModal'); }
+
+// ============================================
+// SICKNESS REPORT CRUD FUNCTIONS
+// ============================================
+
+function resetReportForm() {
+    document.getElementById('reportId').value = '';
+    document.getElementById('report_user').value = '';
+    document.getElementById('report_animal_type').value = 'cattle';
+    document.getElementById('report_animal_count').value = '1';
+    document.getElementById('report_symptom_primary').value = '';
+    document.getElementById('report_symptom_other').value = '';
+    document.getElementById('report_symptom_duration').value = '';
+    document.getElementById('report_severity').value = 'medium';
+    document.getElementById('report_status').value = 'open';
+    document.getElementById('report_notes').value = '';
+    document.getElementById('report_attachments').value = '';
+    document.getElementById('reportModalTitle').textContent = 'New Sickness Report';
+    document.getElementById('reportSubmitBtn').textContent = 'Save Report';
+}
+
+function openAddReportModal() {
+    resetReportForm();
+    openModal('reportModal');
+}
+
+function editReport(id) {
+    showToast('Loading report...', 'info');
+
+    fetch(`${API_URL}/reports/${id}`, { headers: getHeaders() })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const r = data.data;
+            document.getElementById('reportId').value = r.id;
+            document.getElementById('report_user').value = r.user_id || '';
+            document.getElementById('report_animal_type').value = r.affected_animal_type || 'cattle';
+            document.getElementById('report_animal_count').value = r.affected_animal_count || 1;
+            document.getElementById('report_symptom_primary').value = r.symptom_primary || '';
+            document.getElementById('report_symptom_other').value = r.symptom_other || '';
+            document.getElementById('report_symptom_duration').value = r.symptom_duration || '';
+            document.getElementById('report_severity').value = (r.severity_level || 'medium').toLowerCase();
+            document.getElementById('report_status').value = r.status || 'open';
+            document.getElementById('report_notes').value = r.notes || '';
+            document.getElementById('report_attachments').value = Array.isArray(r.attachments) ? r.attachments.join('\n') : '';
+
+            document.getElementById('reportModalTitle').textContent = 'Edit Sickness Report';
+            document.getElementById('reportSubmitBtn').textContent = 'Update Report';
+            openModal('reportModal');
+        } else {
+            showToast(data.message || 'Error loading report', 'error');
+        }
+    })
+    .catch(error => showToast('Error loading report: ' + error.message, 'error'));
+}
+
+function deleteReport(id) {
+    if (!confirm('⚠️ Are you sure you want to delete this sickness report?')) return;
+
+    fetch(`${API_URL}/reports/${id}`, { method: 'DELETE', headers: getHeaders() })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast('Report deleted successfully!');
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showToast(data.message || 'Error deleting report', 'error');
+        }
+    })
+    .catch(error => showToast('Error: ' + error.message, 'error'));
+}
+
+function saveReport() {
+    const id = document.getElementById('reportId').value;
+
+    const attachments = document.getElementById('report_attachments').value
+        .split(/[\r\n,]+/)
+        .map(s => s.trim())
+        .filter(s => s.length > 0);
+
+    const data = {
+        user_id: document.getElementById('report_user').value || null,
+        affected_animal_type: document.getElementById('report_animal_type').value,
+        affected_animal_count: parseInt(document.getElementById('report_animal_count').value) || 1,
+        symptom_primary: document.getElementById('report_symptom_primary').value,
+        symptom_other: document.getElementById('report_symptom_other').value || null,
+        symptom_duration: document.getElementById('report_symptom_duration').value || null,
+        severity_level: document.getElementById('report_severity').value,
+        status: document.getElementById('report_status').value,
+        notes: document.getElementById('report_notes').value || null,
+        attachments: attachments,
+    };
+
+    const url = id ? `${API_URL}/reports/${id}` : `${API_URL}/reports`;
+    const method = id ? 'PUT' : 'POST';
+
+    const submitBtn = document.getElementById('reportSubmitBtn');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Saving...';
+
+    fetch(url, { method: method, headers: getHeaders(), body: JSON.stringify(data) })
+    .then(response => response.json())
+    .then(data => {
+        submitBtn.disabled = false;
+        submitBtn.textContent = id ? 'Update Report' : 'Save Report';
+
+        if (data.success) {
+            showToast(id ? 'Report updated successfully!' : 'Report created successfully!');
+            closeModal('reportModal');
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            let errors = '';
+            if (data.errors) {
+                Object.values(data.errors).forEach(error => { errors += error + '\n'; });
+                showToast(errors, 'error');
+            } else {
+                showToast(data.message || 'Error saving report', 'error');
+            }
+        }
+    })
+    .catch(error => {
+        submitBtn.disabled = false;
+        submitBtn.textContent = id ? 'Update Report' : 'Save Report';
+        showToast('Network error: ' + error.message, 'error');
+    });
+}
 
 function openAddDiseaseModal() { alert('Add Disease functionality coming soon!'); }
 function openAddFarmModal() { alert('Add Farm functionality coming soon!'); }

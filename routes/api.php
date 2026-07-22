@@ -88,7 +88,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/reports/{id}', [ReportController::class, 'show']);
     Route::put('/reports/{id}', [ReportController::class, 'update']);
     Route::delete('/reports/{id}', [ReportController::class, 'destroy']);
-    Route::post('/reports/{id}/assign-doctor', [ReportController::class, 'assignDoctor']);
     Route::post('/reports/{id}/resolve', [ReportController::class, 'resolve']);
     Route::get('/reports/stats', [ReportController::class, 'stats']);
     

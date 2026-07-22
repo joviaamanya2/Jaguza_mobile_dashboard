@@ -176,8 +176,11 @@ class AnimalController extends Controller
             ], 404);
         }
 
-        $reports = SicknessReport::where('animal_id', $id)
-            ->with(['doctor', 'reporter'])
+        // Sickness reports are no longer tied to an individual animal record;
+        // they are filed against an animal *type*. Return reports that match
+        // this animal's type so the history view still has relevant data.
+        $reports = SicknessReport::where('affected_animal_type', $animal->type)
+            ->with('user')
             ->orderBy('created_at', 'desc')
             ->get();
 

@@ -32,11 +32,6 @@ class Disease extends Model
     const SEVERITIES = ['low', 'medium', 'high', 'critical'];
     const RISKS = ['low', 'medium', 'high'];
 
-    public function sicknessReports()
-    {
-        return $this->hasMany(SicknessReport::class);
-    }
-
     public function scopeActive($query)
     {
         return $query->where('is_active', true);

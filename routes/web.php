@@ -38,7 +38,6 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::post('/reports', [\App\Http\Controllers\Api\ReportController::class, 'store']);
         Route::put('/reports/{id}', [\App\Http\Controllers\Api\ReportController::class, 'update']);
         Route::delete('/reports/{id}', [\App\Http\Controllers\Api\ReportController::class, 'destroy']);
-        Route::post('/reports/{id}/assign-doctor', [\App\Http\Controllers\Api\ReportController::class, 'assignDoctor']);
         Route::post('/reports/{id}/resolve', [\App\Http\Controllers\Api\ReportController::class, 'resolve']);
 
         // Doctors

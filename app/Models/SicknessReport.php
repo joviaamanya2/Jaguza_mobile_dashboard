@@ -11,39 +11,31 @@ class SicknessReport extends Model
 
     protected $fillable = [
         'report_id',
-        'animal_id',
-        'disease_id',
-        'symptoms',
-        'reported_by',
-        'doctor_id',
+        'user_id',
+        'affected_animal_type',
+        'affected_animal_count',
+        'symptom_primary',
+        'symptom_other',
+        'symptom_duration',
+        'severity_level',
         'status',
-        'diagnosis',
-        'treatment',
-        'medications',
-        'reported_date',
-        'resolved_date',
         'notes',
+        'attachments',
+    ];
+
+    protected $casts = [
+        'affected_animal_count' => 'integer',
+        'attachments' => 'array',
     ];
 
     const STATUS = ['open', 'treating', 'resolved', 'critical', 'referred'];
+    const SEVERITY = ['mild', 'medium', 'severe', 'critical'];
 
-    public function animal()
+    /**
+     * The user who filed the report.
+     */
+    public function user()
     {
-        return $this->belongsTo(Animal::class);
-    }
-
-    public function disease()
-    {
-        return $this->belongsTo(Disease::class);
-    }
-
-    public function reporter()
-    {
-        return $this->belongsTo(User::class, 'reported_by');
-    }
-
-    public function doctor()
-    {
-        return $this->belongsTo(Doctor::class);
+        return $this->belongsTo(User::class);
     }
 }
