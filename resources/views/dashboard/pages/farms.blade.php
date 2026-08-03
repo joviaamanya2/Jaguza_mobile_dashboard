@@ -1,4 +1,4 @@
-<!-- ===== FARMS ===== -->
+<!-- ===== FARMS PAGE ===== -->
 <div class="page" id="page-farms">
     <div class="section-heading">
         <h2><i class="fas fa-warehouse" style="color:#fd7e14;margin-right:8px;"></i>Farms</h2>
@@ -57,7 +57,7 @@
                     @forelse($farms as $farm)
                     <tr>
                         <td>{{ $loop->iteration }}</td>
-                        <td><strong>{{ $farm->name ?? 'N/A' }}</strong></td>
+                        <td><strong>{{ $farm->farm_name ?? $farm->name ?? 'N/A' }}</strong></td>
                         <td>{{ $farm->owner_name ?? $farm->user->name ?? 'N/A' }}</td>
                         <td>{{ $farm->location ?? 'N/A' }}</td>
                         <td>{{ $farm->size ?? 'N/A' }}</td>

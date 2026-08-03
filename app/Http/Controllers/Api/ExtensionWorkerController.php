@@ -3,31 +3,31 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Doctor;
+use App\Models\ExtensionWorker;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
 
-class DoctorController extends Controller
+class ExtensionWorkerController extends Controller
 {
     /**
-     * Display a listing of doctors.
+     * Display a listing of extension workers.
      */
     public function index(Request $request)
     {
-        $doctors = Doctor::with('user')
+        $workers = ExtensionWorker::with('user')
             ->orderBy('created_at', 'desc')
             ->when($request->search, function ($query, $search) {
                 return $query->whereHas('user', function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%")
                       ->orWhere('email', 'like', "%{$search}%");
-                })->orWhere('specialization', 'like', "%{$search}%")
-                  ->orWhere('location', 'like', "%{$search}%");
+                })->orWhere('expertise_area', 'like', "%{$search}%")
+                  ->orWhere('assigned_region', 'like', "%{$search}%");
             })
-            ->when($request->specialization, function ($query, $specialization) {
-                return $query->where('specialization', $specialization);
+            ->when($request->expertise, function ($query, $expertise) {
+                return $query->where('expertise_area', $expertise);
             })
             ->when($request->available, function ($query) {
                 return $query->where('is_available', true);
@@ -36,24 +36,24 @@ class DoctorController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $doctors
+            'data' => $workers
         ]);
     }
 
     /**
-     * Store a newly created doctor.
+     * Store a newly created extension worker.
      */
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users',
-            'specialization' => 'required|string|max:255',
-            'license_number' => 'required|string|unique:doctors',
+            'expertise_area' => 'required|string|max:255',
+            'education_level' => 'required|string|max:255',
+            'assigned_region' => 'required|string|max:255',
+            'phone_number' => 'required|string|max:20',
             'years_of_experience' => 'nullable|integer|min:0',
-            'location' => 'nullable|string|max:255',
-            'phone_number' => 'nullable|string|max:20',
-            'consultation_fee' => 'nullable|numeric|min:0',
+            'languages_spoken' => 'nullable|string|max:255',
             'bio' => 'nullable|string',
         ]);
 
@@ -65,83 +65,83 @@ class DoctorController extends Controller
         }
 
         try {
-            // Create user account with default password (no password field on dashboard modal)
+            // Create user account with default password
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
                 'password' => Hash::make($request->password ?? 'password123'),
-                'role' => 'vet',
+                'role' => 'extension_worker',
                 'is_active' => true,
             ]);
 
-            // Create doctor profile
-            $doctor = Doctor::create([
+            // Create extension worker profile
+            $worker = ExtensionWorker::create([
                 'user_id' => $user->id,
-                'specialization' => $request->specialization,
-                'license_number' => $request->license_number,
-                'years_of_experience' => $request->years_of_experience ?? 0,
-                'location' => $request->location,
+                'expertise_area' => $request->expertise_area,
+                'education_level' => $request->education_level,
+                'assigned_region' => $request->assigned_region,
                 'phone_number' => $request->phone_number,
-                'consultation_fee' => $request->consultation_fee ?? 0,
+                'years_of_experience' => $request->years_of_experience ?? 0,
+                'languages_spoken' => $request->languages_spoken,
                 'is_available' => true,
                 'rating' => 0,
-                'total_cases' => 0,
+                'total_farm_visits' => 0,
                 'bio' => $request->bio,
             ]);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Doctor added successfully',
-                'data' => $doctor->load('user')
+                'message' => 'Extension worker added successfully',
+                'data' => $worker->load('user')
             ], 201);
 
         } catch (\Exception $e) {
-            Log::error('Doctor creation failed: ' . $e->getMessage());
+            Log::error('Extension worker creation failed: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to create doctor: ' . $e->getMessage()
+                'message' => 'Failed to create extension worker: ' . $e->getMessage()
             ], 500);
         }
     }
 
     /**
-     * Display the specified doctor.
+     * Display the specified extension worker.
      */
     public function show($id)
     {
         try {
-            $doctor = Doctor::with('user')->findOrFail($id);
+            $worker = ExtensionWorker::with('user')->findOrFail($id);
             
             return response()->json([
                 'success' => true,
-                'data' => $doctor
+                'data' => $worker
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Doctor not found'
+                'message' => 'Extension worker not found'
             ], 404);
         }
     }
 
     /**
-     * Update the specified doctor.
+     * Update the specified extension worker.
      */
     public function update(Request $request, $id)
     {
         try {
-            $doctor = Doctor::with('user')->findOrFail($id);
+            $worker = ExtensionWorker::with('user')->findOrFail($id);
             
             $validator = Validator::make($request->all(), [
                 'name' => 'sometimes|string|max:255',
-                'email' => 'sometimes|email|unique:users,email,' . $doctor->user_id,
-                'specialization' => 'sometimes|string|max:255',
-                'license_number' => 'sometimes|string|unique:doctors,license_number,' . $id,
+                'email' => 'sometimes|email|unique:users,email,' . $worker->user_id,
+                'expertise_area' => 'sometimes|string|max:255',
+                'education_level' => 'sometimes|string|max:255',
+                'assigned_region' => 'sometimes|string|max:255',
+                'phone_number' => 'sometimes|string|max:20',
                 'years_of_experience' => 'nullable|integer|min:0',
-                'location' => 'nullable|string|max:255',
-                'phone_number' => 'nullable|string|max:20',
-                'consultation_fee' => 'nullable|numeric|min:0',
+                'languages_spoken' => 'nullable|string|max:255',
                 'is_available' => 'sometimes|boolean',
                 'bio' => 'nullable|string',
             ]);
@@ -166,70 +166,70 @@ class DoctorController extends Controller
             }
             
             if (!empty($userData)) {
-                $doctor->user->update($userData);
+                $worker->user->update($userData);
             }
 
-            // Update doctor
-            $doctorData = $request->only([
-                'specialization', 
-                'license_number', 
-                'years_of_experience',
-                'location',
+            // Update worker
+            $workerData = $request->only([
+                'expertise_area',
+                'education_level',
+                'assigned_region',
                 'phone_number',
-                'consultation_fee', 
-                'is_available', 
+                'years_of_experience',
+                'languages_spoken',
+                'is_available',
                 'bio'
             ]);
             
-            $doctor->update($doctorData);
+            $worker->update($workerData);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Doctor updated successfully',
-                'data' => $doctor->fresh('user')
+                'message' => 'Extension worker updated successfully',
+                'data' => $worker->fresh('user')
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Doctor update failed: ' . $e->getMessage());
+            Log::error('Extension worker update failed: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to update doctor: ' . $e->getMessage()
+                'message' => 'Failed to update extension worker: ' . $e->getMessage()
             ], 500);
         }
     }
 
     /**
-     * Remove the specified doctor.
+     * Remove the specified extension worker.
      */
     public function destroy($id)
     {
         try {
-            $doctor = Doctor::findOrFail($id);
+            $worker = ExtensionWorker::findOrFail($id);
             
-            // Delete the user account too (cascade will handle doctor)
-            $doctor->user->delete();
+            // Delete the user account too (cascade will handle worker)
+            $worker->user->delete();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Doctor deleted successfully'
+                'message' => 'Extension worker deleted successfully'
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Doctor deletion failed: ' . $e->getMessage());
+            Log::error('Extension worker deletion failed: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to delete doctor: ' . $e->getMessage()
+                'message' => 'Failed to delete extension worker: ' . $e->getMessage()
             ], 500);
         }
     }
 
     /**
-     * Update doctor availability.
+     * Update extension worker availability.
      */
     public function updateAvailability(Request $request, $id)
     {
         try {
-            $doctor = Doctor::findOrFail($id);
+            $worker = ExtensionWorker::findOrFail($id);
             
             $validator = Validator::make($request->all(), [
                 'is_available' => 'required|boolean',
@@ -242,12 +242,12 @@ class DoctorController extends Controller
                 ], 422);
             }
 
-            $doctor->update(['is_available' => $request->is_available]);
+            $worker->update(['is_available' => $request->is_available]);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Doctor availability updated',
-                'data' => $doctor
+                'message' => 'Extension worker availability updated',
+                'data' => $worker
             ]);
 
         } catch (\Exception $e) {
@@ -260,17 +260,17 @@ class DoctorController extends Controller
     }
 
     /**
-     * Get doctor statistics.
+     * Get extension worker statistics.
      */
     public function stats()
     {
         return response()->json([
             'success' => true,
             'data' => [
-                'total' => Doctor::count(),
-                'available' => Doctor::where('is_available', true)->count(),
-                'busy' => Doctor::where('is_available', false)->count(),
-                'top_rated' => Doctor::with('user')
+                'total' => ExtensionWorker::count(),
+                'available' => ExtensionWorker::where('is_available', true)->count(),
+                'busy' => ExtensionWorker::where('is_available', false)->count(),
+                'top_rated' => ExtensionWorker::with('user')
                     ->orderBy('rating', 'desc')
                     ->limit(5)
                     ->get(),
@@ -278,3 +278,4 @@ class DoctorController extends Controller
         ]);
     }
 }
+

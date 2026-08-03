@@ -33,18 +33,19 @@
                     <input type="text" id="farm_established" class="form-control" placeholder="2018">
                 </div>
             </div>
-            
+
             <div class="form-group">
                 <label>GPS Coordinates</label>
-                <input type="text" id="farm_coordinates" class="form-control" placeholder="0.3136° N, 32.5811° E">
+                <input type="text" id="farm_coordinates" class="form-control" placeholder="0.3476, 32.5825">
             </div>
-            
+
             <div class="form-group">
                 <label>Description</label>
-                <textarea id="farm_description" class="form-control" rows="3" placeholder="Describe your farm..."></textarea>
+                <textarea id="farm_description" class="form-control" rows="3" placeholder="Brief description of the farm..."></textarea>
             </div>
-            
+
             <div class="form-group">
+
                 <label>Facilities</label>
                 <div id="facilitiesContainer" style="display:flex;flex-wrap:wrap;gap:8px;padding:8px;border:1px solid #e8ecf1;border-radius:8px;min-height:44px;">
                     <span style="color:#6a7a8a;font-size:12px;padding:4px 0;">Select facilities from dropdown</span>

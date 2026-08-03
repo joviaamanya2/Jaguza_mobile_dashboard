@@ -18,6 +18,7 @@ use App\Models\Notification;
 use App\Models\Message;
 use App\Models\Setting;
 use App\Models\Disease;
+use App\Models\ExtensionWorker;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -36,6 +37,7 @@ class DashboardController extends Controller
         $dueGestations = $this->getDueGestations();
         $users = $this->getUsers();
         $doctors = $this->getDoctors();
+        $extensionWorkers = $this->getExtensionWorkers();
         $diseases = $this->getDiseases();
         $farms = $this->getFarms();
         $animals = $this->getAnimals();
@@ -79,6 +81,16 @@ class DashboardController extends Controller
             ->count();
 
         // Return the view with all data
+        // Doctor stats for the doctors page
+        $available_doctors = Doctor::where('is_available', true)->count();
+        $busy_doctors = Doctor::where('is_available', false)->count();
+        $total_cases = Doctor::sum('total_cases');
+
+        // Extension worker stats for the extension workers page
+        $available_workers = ExtensionWorker::where('is_available', true)->count();
+        $busy_workers = ExtensionWorker::where('is_available', false)->count();
+        $total_farm_visits = ExtensionWorker::sum('total_farm_visits');
+
         return view('dashboard', compact(
             'stats',
             'recentReports',
@@ -90,6 +102,7 @@ class DashboardController extends Controller
             'dueGestations',
             'users',
             'doctors',
+            'extensionWorkers',
             'diseases',
             'farms',
             'animals',
@@ -114,7 +127,13 @@ class DashboardController extends Controller
             'newVideosThisWeek',
             'expiredAds',
             'dueGestationsCount',
-            'dueGestationsThisMonth'
+            'dueGestationsThisMonth',
+            'available_doctors',
+            'busy_doctors',
+            'total_cases',
+            'available_workers',
+            'busy_workers',
+            'total_farm_visits'
         ));
     }
 
@@ -125,6 +144,7 @@ class DashboardController extends Controller
             'total_farms' => Farm::count(),
             'total_animals' => Animal::count(),
             'total_doctors' => Doctor::count(),
+            'total_extension_workers' => ExtensionWorker::count(),
             'open_reports' => SicknessReport::where('status', 'open')->count(),
             'under_treatment' => SicknessReport::where('status', 'treating')->count(),
             'resolved_reports' => SicknessReport::where('status', 'resolved')->count(),
@@ -237,6 +257,11 @@ class DashboardController extends Controller
     private function getDoctors()
     {
         return Doctor::with('user')->orderBy('created_at', 'desc')->limit(10)->get();
+    }
+
+    private function getExtensionWorkers()
+    {
+        return ExtensionWorker::with('user')->orderBy('created_at', 'desc')->limit(10)->get();
     }
 
     private function getDiseases()

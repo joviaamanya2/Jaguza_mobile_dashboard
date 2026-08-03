@@ -25,6 +25,9 @@
     <a class="nav-item" id="nav-doctors" onclick="navigate('doctors','Veterinary Doctors')">
       <div class="nav-icon"><i class="fas fa-stethoscope"></i></div><span class="nav-label">Doctors</span>
     </a>
+    <a class="nav-item" id="nav-extension-workers" onclick="navigate('extension-workers','Extension Workers')">
+      <div class="nav-icon"><i class="fas fa-user-tie"></i></div><span class="nav-label">Extension Workers</span>
+    </a>
     
     <a class="nav-item" id="nav-notifications" onclick="navigate('notifications','Notifications')">
       <div class="nav-icon"><i class="fas fa-bell"></i></div><span class="nav-label">Notifications</span>

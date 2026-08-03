@@ -184,7 +184,7 @@ function openAddDoctorModal() {
 function editDoctor(id) {
     showToast('Loading doctor data...', 'info');
     
-    fetch(`${API_URL}/doctors/${id}`, {
+    fetch(`${ADMIN_URL}/doctors/${id}`, {
         headers: getHeaders()
     })
     .then(response => response.json())
@@ -220,7 +220,7 @@ function editDoctor(id) {
 function deleteDoctor(id) {
     if (!confirm('⚠️ Are you sure you want to delete this doctor? This will also delete their user account.')) return;
     
-    fetch(`${API_URL}/doctors/${id}`, {
+    fetch(`${ADMIN_URL}/doctors/${id}`, {
         method: 'DELETE',
         headers: getHeaders()
     })
@@ -254,7 +254,7 @@ function saveDoctor() {
         bio: document.getElementById('doctor_bio').value,
     };
     
-    const url = id ? `${API_URL}/doctors/${id}` : `${API_URL}/doctors`;
+    const url = id ? `${ADMIN_URL}/doctors/${id}` : `${ADMIN_URL}/doctors`;
     const method = id ? 'PUT' : 'POST';
     
     const submitBtn = document.getElementById('doctorSubmitBtn');
@@ -298,7 +298,7 @@ function toggleDoctorAvailability(id, currentStatus) {
     const action = currentStatus ? 'mark as busy' : 'mark as available';
     if (!confirm(`Are you sure you want to ${action} this doctor?`)) return;
     
-    fetch(`${API_URL}/doctors/${id}/availability`, {
+    fetch(`${ADMIN_URL}/doctors/${id}/availability`, {
         method: 'POST',
         headers: getHeaders(),
         body: JSON.stringify({ is_available: !currentStatus })
@@ -318,8 +318,235 @@ function toggleDoctorAvailability(id, currentStatus) {
 }
 
 // ============================================
-// Navigation Functions
+// EXTENSION WORKER CRUD FUNCTIONS
 // ============================================
+
+function resetExtensionWorkerForm() {
+    document.getElementById('extensionWorkerId').value = '';
+    document.getElementById('worker_name').value = '';
+    document.getElementById('worker_email').value = '';
+    document.getElementById('worker_expertise').value = '';
+    document.getElementById('worker_education').value = '';
+    document.getElementById('worker_region').value = '';
+    document.getElementById('worker_phone').value = '';
+    document.getElementById('worker_experience').value = '';
+    document.getElementById('worker_languages').value = '';
+    document.getElementById('worker_bio').value = '';
+    document.getElementById('extensionWorkerModalTitle').textContent = 'Add New Extension Worker';
+    document.getElementById('extensionWorkerSubmitBtn').textContent = 'Save Extension Worker';
+}
+
+function openAddExtensionWorkerModal() {
+    resetExtensionWorkerForm();
+    openModal('extensionWorkerModal');
+}
+
+function editExtensionWorker(id) {
+    showToast('Loading extension worker data...', 'info');
+    
+    fetch(`${ADMIN_URL}/extension-workers/${id}`, {
+        headers: getHeaders()
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const worker = data.data;
+            const user = worker.user;
+            
+            document.getElementById('extensionWorkerId').value = worker.id;
+            document.getElementById('worker_name').value = user?.name || '';
+            document.getElementById('worker_email').value = user?.email || '';
+            document.getElementById('worker_expertise').value = worker.expertise_area || '';
+            document.getElementById('worker_education').value = worker.education_level || '';
+            document.getElementById('worker_region').value = worker.assigned_region || '';
+            document.getElementById('worker_phone').value = worker.phone_number || '';
+            document.getElementById('worker_experience').value = worker.years_of_experience || 0;
+            document.getElementById('worker_languages').value = worker.languages_spoken || '';
+            document.getElementById('worker_bio').value = worker.bio || '';
+            
+            document.getElementById('extensionWorkerModalTitle').textContent = 'Edit Extension Worker';
+            document.getElementById('extensionWorkerSubmitBtn').textContent = 'Update Extension Worker';
+            
+            openModal('extensionWorkerModal');
+        } else {
+            showToast(data.message || 'Error loading extension worker', 'error');
+        }
+    })
+    .catch(error => {
+        showToast('Error loading extension worker: ' + error.message, 'error');
+    });
+}
+
+function deleteExtensionWorker(id) {
+    if (!confirm('⚠️ Are you sure you want to delete this extension worker? This will also delete their user account.')) return;
+    
+    fetch(`${ADMIN_URL}/extension-workers/${id}`, {
+        method: 'DELETE',
+        headers: getHeaders()
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast('Extension worker deleted successfully!');
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showToast(data.message || 'Error deleting extension worker', 'error');
+        }
+    })
+    .catch(error => {
+        showToast('Error: ' + error.message, 'error');
+    });
+}
+
+function saveExtensionWorker() {
+    const id = document.getElementById('extensionWorkerId').value;
+    
+    // Build data object with correct field names
+    const data = {
+        name: document.getElementById('worker_name').value,
+        email: document.getElementById('worker_email').value,
+        expertise_area: document.getElementById('worker_expertise').value,
+        education_level: document.getElementById('worker_education').value,
+        assigned_region: document.getElementById('worker_region').value,
+        phone_number: document.getElementById('worker_phone').value,
+        years_of_experience: parseInt(document.getElementById('worker_experience').value) || 0,
+        languages_spoken: document.getElementById('worker_languages').value,
+        bio: document.getElementById('worker_bio').value,
+    };
+    
+    const url = id ? `${ADMIN_URL}/extension-workers/${id}` : `${ADMIN_URL}/extension-workers`;
+    const method = id ? 'PUT' : 'POST';
+    
+    const submitBtn = document.getElementById('extensionWorkerSubmitBtn');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Saving...';
+    
+    fetch(url, {
+        method: method,
+        headers: getHeaders(),
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        submitBtn.disabled = false;
+        submitBtn.textContent = id ? 'Update Extension Worker' : 'Save Extension Worker';
+        
+        if (data.success) {
+            showToast(id ? 'Extension worker updated successfully!' : 'Extension worker added successfully!');
+            closeModal('extensionWorkerModal');
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            let errors = '';
+            if (data.errors) {
+                Object.values(data.errors).forEach(error => {
+                    errors += error + '\n';
+                });
+                showToast(errors, 'error');
+            } else {
+                showToast(data.message || 'Error saving extension worker', 'error');
+            }
+        }
+    })
+    .catch(error => {
+        submitBtn.disabled = false;
+        submitBtn.textContent = id ? 'Update Extension Worker' : 'Save Extension Worker';
+        showToast('Network error: ' + error.message, 'error');
+    });
+}
+
+function toggleWorkerAvailability(id, currentStatus) {
+    const action = currentStatus ? 'mark as on field' : 'mark as available';
+    if (!confirm(`Are you sure you want to ${action} this extension worker?`)) return;
+    
+    fetch(`${ADMIN_URL}/extension-workers/${id}/availability`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify({ is_available: !currentStatus })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast(data.message);
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showToast(data.message || 'Error updating availability', 'error');
+        }
+    })
+    .catch(error => {
+        showToast('Error: ' + error.message, 'error');
+    });
+}
+
+// ============================================
+// INLINE SICKNESS REPORT FUNCTIONS (for the Sickness page)
+// ============================================
+
+function resetInlineReportForm() {
+    document.getElementById('inlineReportId').value = '';
+    document.getElementById('inline_animal_type').value = 'cattle';
+    document.getElementById('inline_animal_count').value = '1';
+    document.getElementById('inline_symptom_primary').value = '';
+    document.getElementById('inline_symptom_other').value = '';
+    document.getElementById('inline_symptom_duration').value = '';
+    document.getElementById('inline_severity').value = 'medium';
+    document.getElementById('inline_user').value = '';
+    document.getElementById('inline_notes').value = '';
+    const btn = document.getElementById('inlineReportSubmitBtn');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Report';
+}
+
+function saveInlineReport() {
+    const data = {
+        affected_animal_type: document.getElementById('inline_animal_type').value,
+        affected_animal_count: parseInt(document.getElementById('inline_animal_count').value) || 1,
+        symptom_primary: document.getElementById('inline_symptom_primary').value,
+        symptom_other: document.getElementById('inline_symptom_other').value || null,
+        symptom_duration: document.getElementById('inline_symptom_duration').value || null,
+        severity_level: document.getElementById('inline_severity').value,
+        user_id: document.getElementById('inline_user').value || null,
+        notes: document.getElementById('inline_notes').value || null,
+        status: 'open',
+    };
+    
+    const submitBtn = document.getElementById('inlineReportSubmitBtn');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+    
+    fetch(`${API_URL}/reports`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Report';
+        
+        if (result.success) {
+            showToast('Sickness report submitted successfully!');
+            resetInlineReportForm();
+            // Refresh the page after a short delay to show updated data on dashboard
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            let errors = '';
+            if (result.errors) {
+                Object.values(result.errors).forEach(error => { errors += error + '\n'; });
+                showToast(errors, 'error');
+            } else {
+                showToast(result.message || 'Error submitting report', 'error');
+            }
+        }
+    })
+    .catch(error => {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Report';
+        showToast('Network error: ' + error.message, 'error');
+    });
+}
+
+// ============================================
+// NAVIGATION FUNCTIONS
 
 function toggleSidebar() {
     document.getElementById('sidebar').classList.toggle('collapsed');
@@ -573,7 +800,6 @@ function saveUser() {
 // OTHER MODAL FUNCTIONS
 // ============================================
 
-function openAddDoctorModal() { openModal('doctorModal'); }
 function openAddAnimalModal() { openModal('animalModal'); }
 
 // ============================================

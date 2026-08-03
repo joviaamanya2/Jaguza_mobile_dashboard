@@ -41,10 +41,18 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::post('/reports/{id}/resolve', [\App\Http\Controllers\Api\ReportController::class, 'resolve']);
 
         // Doctors
+        Route::get('/doctors/{id}', [\App\Http\Controllers\Api\DoctorController::class, 'show']);
         Route::post('/doctors', [\App\Http\Controllers\Api\DoctorController::class, 'store']);
         Route::put('/doctors/{id}', [\App\Http\Controllers\Api\DoctorController::class, 'update']);
         Route::delete('/doctors/{id}', [\App\Http\Controllers\Api\DoctorController::class, 'destroy']);
         Route::post('/doctors/{id}/availability', [\App\Http\Controllers\Api\DoctorController::class, 'updateAvailability']);
+
+        // Extension Workers
+        Route::get('/extension-workers/{id}', [\App\Http\Controllers\Api\ExtensionWorkerController::class, 'show']);
+        Route::post('/extension-workers', [\App\Http\Controllers\Api\ExtensionWorkerController::class, 'store']);
+        Route::put('/extension-workers/{id}', [\App\Http\Controllers\Api\ExtensionWorkerController::class, 'update']);
+        Route::delete('/extension-workers/{id}', [\App\Http\Controllers\Api\ExtensionWorkerController::class, 'destroy']);
+        Route::post('/extension-workers/{id}/availability', [\App\Http\Controllers\Api\ExtensionWorkerController::class, 'updateAvailability']);
 
         // Diseases
         Route::post('/diseases', [\App\Http\Controllers\Api\DiseaseController::class, 'store']);

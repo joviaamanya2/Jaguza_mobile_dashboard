@@ -65,10 +65,10 @@
               </td>
               <td><span class="badge badge-blue">{{ $doctor->specialization ?? 'N/A' }}</span></td>
               <td>{{ $doctor->license_number ?? 'N/A' }}</td>
-              <td>{{ $doctor->clinic_location ?? $doctor->location ?? 'N/A' }}</td>
+              <td>{{ $doctor->location ?? 'N/A' }}</td>
               <td>{{ $doctor->years_of_experience ?? 0 }} yrs</td>
               <td>
-                <span class="badge badge-purple">{{ number_format($doctor->cases_count ?? 0) }}</span>
+              <span class="badge badge-purple">{{ number_format($doctor->total_cases ?? 0) }}</span>
               </td>
               <td>
                 @php
