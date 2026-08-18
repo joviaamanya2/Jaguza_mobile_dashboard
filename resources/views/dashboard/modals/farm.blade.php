@@ -45,6 +45,14 @@
             </div>
 
             <div class="form-group">
+                <label>Farm Image</label>
+                <input type="file" id="farm_image" class="form-control" accept="image/*" onchange="previewFarmImage()">
+                <div id="farmImagePreview" style="margin-top:8px;display:none;">
+                    <img id="farmImagePreviewImg" src="" alt="Farm preview" style="max-width:100%;max-height:140px;border-radius:8px;border:1px solid #e8ecf1;object-fit:cover;">
+                </div>
+            </div>
+
+            <div class="form-group">
 
                 <label>Facilities</label>
                 <div id="facilitiesContainer" style="display:flex;flex-wrap:wrap;gap:8px;padding:8px;border:1px solid #e8ecf1;border-radius:8px;min-height:44px;">

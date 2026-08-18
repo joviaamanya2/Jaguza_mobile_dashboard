@@ -129,6 +129,9 @@ function resetFarmForm() {
     document.getElementById('farm_established').value = '';
     document.getElementById('farm_coordinates').value = '';
     document.getElementById('farm_description').value = '';
+    document.getElementById('farm_image').value = '';
+    document.getElementById('farmImagePreview').style.display = 'none';
+    document.getElementById('farmImagePreviewImg').src = '';
     selectedFacilities = [];
     renderFacilities();
     
@@ -251,6 +254,24 @@ function deleteFarm(id) {
     });
 }
 
+function previewFarmImage() {
+    const input = document.getElementById('farm_image');
+    const preview = document.getElementById('farmImagePreview');
+    const previewImg = document.getElementById('farmImagePreviewImg');
+
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            previewImg.src = e.target.result;
+            preview.style.display = 'block';
+        };
+        reader.readAsDataURL(input.files[0]);
+    } else {
+        preview.style.display = 'none';
+        previewImg.src = '';
+    }
+}
+
 function saveFarm() {
     const id = document.getElementById('farmId').value;
     
@@ -260,17 +281,24 @@ function saveFarm() {
         return;
     }
     
-    const data = {
-        farm_name: document.getElementById('farm_name').value,
-        owner_name: document.getElementById('farm_owner').value,
-        location: document.getElementById('farm_location').value,
-        size: document.getElementById('farm_size').value,
-        established_year: document.getElementById('farm_established').value,
-        coordinates: document.getElementById('farm_coordinates').value,
-        description: document.getElementById('farm_description').value,
-        facilities: selectedFacilities,
-        animals: animals,
-    };
+    const formData = new FormData();
+    formData.append('name', document.getElementById('farm_name').value);
+    formData.append('farm_name', document.getElementById('farm_name').value);
+    formData.append('owner_name', document.getElementById('farm_owner').value);
+    formData.append('farm_owner', document.getElementById('farm_owner').value);
+    formData.append('location', document.getElementById('farm_location').value);
+    formData.append('farm_location', document.getElementById('farm_location').value);
+    formData.append('size', document.getElementById('farm_size').value);
+    formData.append('established_year', document.getElementById('farm_established').value);
+    formData.append('coordinates', document.getElementById('farm_coordinates').value);
+    formData.append('description', document.getElementById('farm_description').value);
+    formData.append('facilities', JSON.stringify(selectedFacilities));
+    formData.append('animals', JSON.stringify(animals));
+
+    const imageFile = document.getElementById('farm_image').files[0];
+    if (imageFile) {
+        formData.append('image', imageFile);
+    }
     
     const url = id ? `${API_URL}/farms/${id}` : `${API_URL}/farms`;
     const method = id ? 'PUT' : 'POST';
@@ -281,8 +309,11 @@ function saveFarm() {
     
     fetch(url, {
         method: method,
-        headers: getHeaders(),
-        body: JSON.stringify(data)
+        headers: {
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': CSRF_TOKEN,
+        },
+        body: formData
     })
     .then(response => response.json())
     .then(data => {

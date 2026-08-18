@@ -57,7 +57,14 @@
                     @forelse($farms as $farm)
                     <tr>
                         <td>{{ $loop->iteration }}</td>
-                        <td><strong>{{ $farm->farm_name ?? $farm->name ?? 'N/A' }}</strong></td>
+                        <td>
+                            @if($farm->image_url)
+                                <img src="{{ $farm->image_url }}" alt="{{ $farm->name ?? 'Farm image' }}" style="width:48px;height:48px;border-radius:8px;object-fit:cover;margin-right:8px;">
+                            @else
+                                <i class="fas fa-warehouse" style="margin-right:8px;color:#fd7e14;"></i>
+                            @endif
+                            <strong>{{ $farm->farm_name ?? $farm->name ?? 'N/A' }}</strong>
+                        </td>
                         <td>{{ $farm->owner_name ?? $farm->user->name ?? 'N/A' }}</td>
                         <td>{{ $farm->location ?? 'N/A' }}</td>
                         <td>{{ $farm->size ?? 'N/A' }}</td>

@@ -5,14 +5,15 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Farm;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 
 class FarmController extends Controller
 {
     public function index(Request $request)
     {
-        $farms = Farm::with('user')
+        $farms = Farm::with(['user', 'animals', 'workers'])
             ->when($request->user()->role !== 'admin', function ($query) use ($request) {
                 return $query->where('user_id', $request->user()->id);
             })
@@ -33,14 +34,18 @@ class FarmController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'location' => 'required|string|max:255',
-            'owner_name' => 'required|string|max:255',
+            'name' => 'required_without:farm_name|string|max:255',
+            'farm_name' => 'required_without:name|string|max:255',
+            'location' => 'required_without:farm_location|string|max:255',
+            'farm_location' => 'required_without:location|string|max:255',
+            'owner_name' => 'required_without:farm_owner|string|max:255',
+            'farm_owner' => 'required_without:owner_name|string|max:255',
             'size' => 'nullable|string|max:100',
             'description' => 'nullable|string',
             'established_year' => 'nullable|string|max:255',
             'coordinates' => 'nullable|string|max:255',
             'facilities' => 'nullable|array',
+            'image' => 'nullable|image|max:2048',
         ]);
 
         if ($validator->fails()) {
@@ -51,18 +56,29 @@ class FarmController extends Controller
         }
 
         try {
-            $farm = Farm::create([
+            $facilities = $request->input('facilities');
+            if (is_string($facilities)) {
+                $facilities = json_decode($facilities, true) ?: [];
+            }
+
+            $data = [
                 'user_id' => $request->user()->id,
-                'name' => $request->name,
-                'owner_name' => $request->owner_name,
-                'location' => $request->location,
+                'name' => $request->input('name', $request->input('farm_name')),
+                'owner_name' => $request->input('owner_name', $request->input('farm_owner')),
+                'location' => $request->input('location', $request->input('farm_location')),
                 'size' => $request->size,
                 'description' => $request->description,
                 'established_year' => $request->established_year,
                 'coordinates' => $request->coordinates,
-                'facilities' => $request->facilities,
+                'facilities' => $facilities,
                 'is_active' => true,
-            ]);
+            ];
+
+            if ($request->hasFile('image')) {
+                $data['image'] = $request->file('image')->store('farms', 'public');
+            }
+
+            $farm = Farm::create($data);
 
             return response()->json([
                 'success' => true,
@@ -123,13 +139,17 @@ class FarmController extends Controller
 
             $validator = Validator::make($request->all(), [
                 'name' => 'sometimes|string|max:255',
+                'farm_name' => 'sometimes|string|max:255',
                 'location' => 'sometimes|string|max:255',
+                'farm_location' => 'sometimes|string|max:255',
                 'owner_name' => 'sometimes|string|max:255',
+                'farm_owner' => 'sometimes|string|max:255',
                 'size' => 'nullable|string|max:100',
                 'description' => 'nullable|string',
                 'established_year' => 'nullable|string|max:255',
                 'coordinates' => 'nullable|string|max:255',
-                'facilities' => 'nullable|array',
+                'facilities' => 'nullable',
+                'image' => 'nullable|image|max:2048',
                 'is_active' => 'sometimes|boolean',
             ]);
 
@@ -140,7 +160,29 @@ class FarmController extends Controller
                 ], 422);
             }
 
-            $farm->update($validator->validated());
+            $data = $validator->validated();
+
+            if ($request->has('facilities') && is_string($request->input('facilities'))) {
+                $data['facilities'] = json_decode($request->input('facilities'), true) ?: [];
+            }
+
+            if ($request->hasFile('image')) {
+                $data['image'] = $request->file('image')->store('farms', 'public');
+            }
+
+            if (!array_key_exists('name', $data) && $request->has('farm_name')) {
+                $data['name'] = $request->input('farm_name');
+            }
+
+            if (!array_key_exists('location', $data) && $request->has('farm_location')) {
+                $data['location'] = $request->input('farm_location');
+            }
+
+            if (!array_key_exists('owner_name', $data) && $request->has('farm_owner')) {
+                $data['owner_name'] = $request->input('farm_owner');
+            }
+
+            $farm->update($data);
 
             return response()->json([
                 'success' => true,

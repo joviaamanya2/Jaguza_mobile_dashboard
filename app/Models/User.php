@@ -74,7 +74,7 @@ class User extends Authenticatable
     // Relationships
     public function farms()
     {
-        return $this->hasMany(Farm::class, 'owner_id');
+        return $this->hasMany(Farm::class, 'user_id');
     }
 
     public function animals()

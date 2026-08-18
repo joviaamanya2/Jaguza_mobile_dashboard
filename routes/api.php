@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\AnimalController;
 use App\Http\Controllers\Api\FarmController;
+use App\Http\Controllers\Api\WorkerController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\DoctorController;
 use App\Http\Controllers\Api\DiseaseController;
@@ -71,6 +72,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/farms/{id}', [FarmController::class, 'show']);
     Route::put('/farms/{id}', [FarmController::class, 'update']);
     Route::delete('/farms/{id}', [FarmController::class, 'destroy']);
+    
+    // ========== WORKERS ==========
+    Route::get('/workers', [WorkerController::class, 'index']);
+    Route::post('/workers', [WorkerController::class, 'store']);
+    Route::get('/workers/{id}', [WorkerController::class, 'show']);
+    Route::put('/workers/{id}', [WorkerController::class, 'update']);
+    Route::delete('/workers/{id}', [WorkerController::class, 'destroy']);
     
     // ========== ANIMALS ==========
     Route::get('/animals', [AnimalController::class, 'index']);

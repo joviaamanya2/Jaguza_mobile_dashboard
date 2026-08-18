@@ -239,7 +239,7 @@ class DashboardController extends Controller
 
     private function getFarms()
     {
-        return Farm::with('owner')->orderBy('created_at', 'desc')->limit(10)->get();
+        return Farm::with('user')->orderBy('created_at', 'desc')->limit(10)->get();
     }
 
     private function getAnimals()

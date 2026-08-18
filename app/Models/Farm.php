@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class Farm extends Model
 {
@@ -28,6 +29,8 @@ class Farm extends Model
         'is_active' => 'boolean',
     ];
 
+    protected $appends = ['image_url'];
+
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
@@ -36,6 +39,11 @@ class Farm extends Model
     public function animals()
     {
         return $this->hasMany(Animal::class);
+    }
+
+    public function workers()
+    {
+        return $this->hasMany(Worker::class);
     }
 
     public function scopeActive($query)
@@ -49,6 +57,17 @@ class Farm extends Model
     public function owner()
     {
         return $this->belongsTo(User::class, 'owner_id');
+    }
+
+    public function getImageUrlAttribute()
+    {
+        if (empty($this->image)) {
+            return null;
+        }
+
+        return Storage::disk('public')->exists($this->image)
+            ? Storage::disk('public')->url($this->image)
+            : asset('storage/' . ltrim($this->image, '/'));
     }
 
     public function getTotalAnimalsAttribute()
