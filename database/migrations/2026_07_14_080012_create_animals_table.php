@@ -10,14 +10,14 @@ return new class extends Migration
     {
         Schema::create('animals', function (Blueprint $table) {
             $table->id();
-            $table->string('identification_number')->unique();
+            $table->string('identification_number')->nullable()->unique();
             $table->string('name')->nullable();
-            $table->enum('type', ['cattle', 'goat', 'sheep', 'pig', 'poultry', 'rabbit', 'horse', 'other']);
-            $table->string('breed')->default('other');
-            $table->enum('gender', ['male', 'female']);
-            $table->integer('age');
+            $table->enum('type', ['cattle', 'poultry', 'goats', 'pigs', 'sheep', 'rabbits', 'fish', 'other']);
+            $table->string('breed')->nullable();
+            $table->enum('gender', ['male', 'female'])->nullable();
+            $table->integer('age')->nullable();
             $table->decimal('weight', 10, 2)->nullable();
-            $table->enum('health_status', ['healthy', 'sick', 'treatment', 'quarantine', 'recovering', 'critical'])->default('healthy');
+            $table->enum('health_status', ['healthy', 'sick', 'injured', 'recovering', 'pregnant', 'lactating', 'critical'])->default('healthy');
             $table->foreignId('farm_id')->constrained()->onDelete('cascade');
             $table->foreignId('owner_id')->constrained('users')->onDelete('cascade');
             $table->string('photo')->nullable();

@@ -1,5 +1,5 @@
   <!-- ===== VACCINATIONS ===== -->
-  <div class="page" id="page-vaccinations">
+  <div class="page {{ ($initialPage ?? 'dashboard') === 'vaccinations' ? 'active' : '' }}" id="page-vaccinations">
     <div class="section-heading">
       <h2><i class="fas fa-syringe" style="color:#0d6efd;margin-right:8px;"></i>Vaccinations</h2>
       <button class="btn btn-primary" onclick="openAddVaccinationModal()">+ Add Record</button>

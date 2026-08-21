@@ -1,5 +1,5 @@
   <!-- ===== SETTINGS ===== -->
-  <div class="page" id="page-settings">
+  <div class="page {{ ($initialPage ?? 'dashboard') === 'settings' ? 'active' : '' }}" id="page-settings">
     <div class="section-heading">
       <h2><i class="fas fa-cog" style="color:#2e7d32;margin-right:8px;"></i>Settings</h2>
       <button class="btn btn-primary" onclick="saveSettings()">Save Changes</button>

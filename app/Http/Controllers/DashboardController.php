@@ -24,8 +24,10 @@ use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(Request $request, ?string $page = null)
     {
+        $initialPage = $request->route('page') ?: ($page ?: 'dashboard');
+
         // Get all data for the dashboard
         $stats = $this->getStats();
         $recentReports = $this->getRecentReports();
@@ -47,6 +49,11 @@ class DashboardController extends Controller
         $marketplaceListings = $this->getMarketplaceListings();
         $settings = $this->getSettings();
         $weatherAdvisories = $this->getWeatherAdvisories();
+
+        // Filters and collection expected by the decision-support dashboard page.
+        $resources = $decisionSupport;
+        $categories = ['cattle', 'goat', 'sheep', 'poultry', 'pig', 'rabbit'];
+        $topics = ['feeding', 'health', 'breeding', 'housing', 'marketing'];
         
         // Chart data
         $chartData = $this->getChartData();
@@ -99,6 +106,10 @@ class DashboardController extends Controller
             'activeAds',
             'weatherUpdates',
             'decisionSupport',
+            'initialPage',
+            'resources',
+            'categories',
+            'topics',
             'dueGestations',
             'users',
             'doctors',

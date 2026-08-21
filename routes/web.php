@@ -4,6 +4,19 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 
+// Always start browser visits at the login page unless an admin is signed in.
+Route::get('/', function () {
+    if (auth()->check() && auth()->user()->isAdmin()) {
+        return redirect()->route('dashboard');
+    }
+
+    if (auth()->check()) {
+        auth()->logout();
+    }
+
+    return redirect()->route('login');
+});
+
 // Guest routes (public)
 Route::middleware(['guest'])->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -14,10 +27,9 @@ Route::middleware(['guest'])->group(function () {
 
 // Protected admin routes
 Route::middleware(['auth', 'admin'])->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/', function () {
-        return redirect('/dashboard');
-    });
+    Route::get('/dashboard/{page?}', [DashboardController::class, 'index'])
+        ->where('page', 'dashboard|analytics|users|doctors|extension-workers|notifications|farms|livestock|gestation|vaccinations|sickness|disease|decision|marketplace|videos|ads|weather|aichat|settings')
+        ->name('dashboard');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
     // Admin CRUD routes
@@ -101,6 +113,15 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
         // Settings
         Route::post('/settings', [\App\Http\Controllers\Api\SettingsController::class, 'store']);
+
+        // Decision support management pages
+        Route::resource('decision-support', \App\Http\Controllers\Api\DecisionSupportController::class)
+            ->except(['show'])
+            ->parameters(['decision-support' => 'decisionSupport']);
+        Route::post('/decision-support/{decisionSupport}/toggle-publish', [\App\Http\Controllers\Api\DecisionSupportController::class, 'togglePublish'])
+            ->name('decision-support.toggle-publish');
+        Route::post('/decision-support/{decisionSupport}/toggle-featured', [\App\Http\Controllers\Api\DecisionSupportController::class, 'toggleFeatured'])
+            ->name('decision-support.toggle-featured');
     });
 });
 

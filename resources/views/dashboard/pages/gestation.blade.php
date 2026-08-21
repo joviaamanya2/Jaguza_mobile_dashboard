@@ -1,5 +1,5 @@
   <!-- ===== GESTATION ===== -->
-  <div class="page" id="page-gestation">
+  <div class="page {{ ($initialPage ?? 'dashboard') === 'gestation' ? 'active' : '' }}" id="page-gestation">
     <div class="section-heading">
       <h2><i class="fas fa-baby" style="color:#dc3545;margin-right:8px;"></i>Gestation Information</h2>
       <button class="btn btn-primary" onclick="openAddGestationModal()">+ Add Record</button>

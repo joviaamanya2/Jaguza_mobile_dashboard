@@ -21,8 +21,12 @@ class DiseaseController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255|unique:diseases',
+            'thumbnail' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'species_affected' => 'required|string',
             'symptoms' => 'required|string',
+            'transmission' => 'nullable|string',
+            'prevention' => 'nullable|string',
+            'treatment' => 'required|string',
             'severity' => 'required|in:' . implode(',', Disease::SEVERITIES),
             'outbreak_risk' => 'required|in:' . implode(',', Disease::RISKS),
         ]);
@@ -31,10 +35,16 @@ class DiseaseController extends Controller
             return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
         }
 
-        $disease = Disease::create(array_merge(
-            $request->all(),
-            ['is_active' => true]
-        ));
+        $data = $request->except('thumbnail');
+        if ($request->hasFile('thumbnail')) {
+            $data['thumbnail'] = $request->file('thumbnail')->store('diseases', 'public');
+        }
+        $disease = Disease::create(array_merge($data, ['is_active' => true]));
+
+        if (!$request->expectsJson()) {
+            return redirect()->route('dashboard', ['page' => 'disease'])
+                ->with('success', 'Disease added successfully.');
+        }
 
         return response()->json([
             'success' => true,
@@ -61,8 +71,12 @@ class DiseaseController extends Controller
 
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255|unique:diseases,name,' . $id,
+            'thumbnail' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'species_affected' => 'required|string',
             'symptoms' => 'required|string',
+            'transmission' => 'nullable|string',
+            'prevention' => 'nullable|string',
+            'treatment' => 'required|string',
             'severity' => 'required|in:' . implode(',', Disease::SEVERITIES),
             'outbreak_risk' => 'required|in:' . implode(',', Disease::RISKS),
         ]);
@@ -71,7 +85,16 @@ class DiseaseController extends Controller
             return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
         }
 
-        $disease->update($request->all());
+        $data = $request->except('thumbnail');
+        if ($request->hasFile('thumbnail')) {
+            $data['thumbnail'] = $request->file('thumbnail')->store('diseases', 'public');
+        }
+        $disease->update($data);
+
+        if (!$request->expectsJson()) {
+            return redirect()->route('dashboard', ['page' => 'disease'])
+                ->with('success', 'Disease updated successfully.');
+        }
 
         return response()->json([
             'success' => true,

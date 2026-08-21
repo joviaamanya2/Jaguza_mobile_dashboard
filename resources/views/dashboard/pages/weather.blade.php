@@ -1,5 +1,5 @@
   <!-- ===== WEATHER ===== -->
-  <div class="page" id="page-weather">
+  <div class="page {{ ($initialPage ?? 'dashboard') === 'weather' ? 'active' : '' }}" id="page-weather">
     <div class="section-heading">
       <h2><i class="fas fa-cloud-sun" style="color:#f57c00;margin-right:8px;"></i>Weather Updates</h2>
       <button class="btn btn-outline" onclick="refreshWeather()"><i class="fas fa-sync"></i> Refresh</button>

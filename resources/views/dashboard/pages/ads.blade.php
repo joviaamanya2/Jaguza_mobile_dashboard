@@ -1,5 +1,5 @@
   <!-- ===== ADVERTISEMENTS ===== -->
-  <div class="page" id="page-ads">
+  <div class="page {{ ($initialPage ?? 'dashboard') === 'ads' ? 'active' : '' }}" id="page-ads">
     <div class="section-heading">
       <h2><i class="fas fa-bullhorn" style="color:#f57c00;margin-right:8px;"></i>Advertisements</h2>
       <button class="btn btn-primary" onclick="openAddAdModal()">+ Create Ad</button>

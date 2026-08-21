@@ -554,7 +554,7 @@ function toggleSidebar() {
     document.getElementById('main-wrap').classList.toggle('shifted');
 }
 
-function navigate(pageId, title) {
+function navigate(pageId, title, updateUrl = true) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     var page = document.getElementById('page-' + pageId);
@@ -563,11 +563,26 @@ function navigate(pageId, title) {
     if (nav) nav.classList.add('active');
     document.getElementById('page-title').textContent = title || pageId.charAt(0).toUpperCase() + pageId.slice(1);
     document.getElementById('main-wrap').scrollTop = 0;
+    if (updateUrl) {
+        const url = pageId === 'dashboard' ? '/dashboard' : `/dashboard/${pageId}`;
+        window.location.href = url;
+        return;
+    }
     if (pageId === 'analytics' && !window.analyticsRendered) { 
         renderAnalyticsCharts(); 
         window.analyticsRendered = true; 
     }
 }
+
+window.addEventListener('popstate', () => {
+    const pageId = window.location.pathname.split('/').filter(Boolean)[1] || 'dashboard';
+    navigate(pageId, null, false);
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    const urlPage = window.location.pathname.match(/^\/dashboard\/([^/]+)/)?.[1] || 'dashboard';
+    navigate(urlPage === 'dashboard' ? 'dashboard' : urlPage, null, false);
+});
 
 // ============================================
 // API Helpers
@@ -928,7 +943,7 @@ function saveReport() {
     });
 }
 
-function openAddDiseaseModal() { alert('Add Disease functionality coming soon!'); }
+function openAddDiseaseModal() { openModal('diseaseModal'); }
 function openAddFarmModal() { alert('Add Farm functionality coming soon!'); }
 function openAddVideoModal() { alert('Upload Video functionality coming soon!'); }
 function openAddAdModal() { alert('Create Ad functionality coming soon!'); }

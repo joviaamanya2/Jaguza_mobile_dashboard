@@ -1,5 +1,5 @@
   <!-- ===== DOCTORS ===== -->
-  <div class="page" id="page-doctors">
+  <div class="page {{ ($initialPage ?? 'dashboard') === 'doctors' ? 'active' : '' }}" id="page-doctors">
     <div class="section-heading">
       <h2><i class="fas fa-stethoscope" style="color:#0d6efd;margin-right:8px;"></i>Veterinary Doctors</h2>
       <button class="btn btn-primary" onclick="openAddDoctorModal()">+ Add Doctor</button>

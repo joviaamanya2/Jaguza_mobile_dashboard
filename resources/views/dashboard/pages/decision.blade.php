@@ -1,30 +1,136 @@
-  <!-- ===== DECISION SUPPORT ===== -->
-  <div class="page" id="page-decision">
-    <div class="section-heading">
-      <h2><i class="fas fa-brain" style="color:#0d6efd;margin-right:8px;"></i>Decision Support</h2>
-      <button class="btn btn-primary" onclick="openAddDecisionModal()">+ Add Article</button>
-    </div>
-    <div class="stats-grid">
-      <div class="stat-card"><div class="stat-icon" style="background:#e8f5e9;color:#2e7d32;"><i class="fas fa-lightbulb"></i></div><div class="stat-body"><h3>{{ number_format(count($decisionSupport)) }}</h3><p>AI Recommendations</p></div></div>
-      <div class="stat-card"><div class="stat-icon" style="background:#e3f2fd;color:#0d47a1;"><i class="fas fa-check-circle"></i></div><div class="stat-body"><h3>94%</h3><p>Accuracy Rate</p></div></div>
-      <div class="stat-card"><div class="stat-icon" style="background:#fff3e0;color:#e65100;"><i class="fas fa-clock"></i></div><div class="stat-body"><h3>1.2s</h3><p>Avg Response Time</p></div></div>
-    </div>
-    <div class="card">
-      @forelse($decisionSupport as $article)
-      <div class="notif-item">
-        <div class="notif-dot" style="background:{{ $article->is_featured ? '#2e7d32' : '#0d6efd' }};"></div>
-        <div class="notif-body">
-          <p><strong style="color:#1a1a2e;">{{ $article->title }}</strong></p>
-          <p style="font-size:13px;color:#4a5a6a;margin-top:2px;">{{ Str::limit($article->summary ?? $article->content ?? '', 150) }}</p>
-          <span style="display:flex;gap:12px;margin-top:6px;">
-            <span><i class="fas fa-tag"></i> {{ ucfirst($article->category ?? 'General') }}</span>
-            <span><i class="fas fa-star"></i> {{ $article->difficulty_level ?? 'Beginner' }}</span>
-            <span><i class="fas fa-eye"></i> {{ number_format($article->views_count ?? 0) }} views</span>
-          </span>
+{{-- resources/views/admin/decision-support/index.blade.php --}}
+<div class="page {{ ($initialPage ?? 'dashboard') === 'decision' ? 'active' : '' }}" id="page-decision">
+<div class="container-fluid decision-page-container">
+    <div class="decision-page-header">
+        <div>
+            <h1>Decision Support Resources</h1>
+            <p>Manage practical livestock guidance for farmers.</p>
         </div>
-      </div>
-      @empty
-      <div style="text-align:center;padding:40px;color:#6a7a8a;"><p>No decision support articles available.</p></div>
-      @endforelse
+        <button type="button" class="btn btn-primary" onclick="openModal('decisionResourceModal')">
+            <i class="fas fa-plus"></i> Add New Resource
+        </button>
     </div>
-  </div>
+
+    <!-- Filters -->
+    <div class="card decision-filter-card">
+        <form method="GET" class="decision-filters">
+                <div class="decision-filter-field">
+                    <label class="form-label">Category</label>
+                    <select name="category" class="form-select">
+                        <option value="">All Categories</option>
+                        @foreach($categories as $cat)
+                            <option value="{{ $cat }}" {{ request('category') == $cat ? 'selected' : '' }}>
+                                {{ ucfirst($cat) }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="decision-filter-field">
+                    <label class="form-label">Topic</label>
+                    <select name="topic" class="form-select">
+                        <option value="">All Topics</option>
+                        @foreach($topics as $topic)
+                            <option value="{{ $topic }}" {{ request('topic') == $topic ? 'selected' : '' }}>
+                                {{ ucfirst($topic) }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="decision-filter-field">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-select">
+                        <option value="">All</option>
+                        <option value="published" {{ request('status') == 'published' ? 'selected' : '' }}>Published</option>
+                        <option value="draft" {{ request('status') == 'draft' ? 'selected' : '' }}>Draft</option>
+                    </select>
+                </div>
+                <div class="decision-filter-actions">
+                    <button type="submit" class="btn btn-primary">Filter</button>
+                    <a href="{{ route('dashboard', ['page' => 'decision']) }}" class="btn btn-secondary">Reset</a>
+                </div>
+        </form>
+    </div>
+
+    <!-- Resources Table -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Category</th>
+                            <th>Topic</th>
+                            <th>Status</th>
+                            <th>Views</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($resources as $resource)
+                        <tr>
+                            <td>
+                                @if($resource->image_url)<img src="{{ $resource->image_url }}" alt="{{ $resource->title }}" style="width:42px;height:42px;object-fit:cover;border-radius:8px;margin-right:8px;vertical-align:middle;">@endif
+                                <strong>{{ $resource->title }}</strong>
+                                @if($resource->is_featured)
+                                    <span class="badge bg-warning text-dark ms-2">Featured</span>
+                                @endif
+                            </td>
+                            <td>
+                                <span class="badge" style="background: {{ $resource->animal_info['color'] }}20; color: {{ $resource->animal_info['color'] }};">
+                                    <i class="fas {{ $resource->animal_info['icon'] }}"></i>
+                                    {{ $resource->animal_info['name'] }}
+                                </span>
+                            </td>
+                            <td>
+                                @if($resource->topic)
+                                    <span class="badge bg-info">
+                                        <i class="fas {{ $resource->topic_info['icon'] }}"></i>
+                                        {{ $resource->topic_info['title'] }}
+                                    </span>
+                                @else
+                                    <span class="text-muted">General</span>
+                                @endif
+                            </td>
+                            <td>
+                                @if($resource->is_published)
+                                    <span class="badge bg-success">Published</span>
+                                @else
+                                    <span class="badge bg-danger">Draft</span>
+                                @endif
+                            </td>
+                            <td>{{ number_format($resource->views_count) }}</td>
+                            <td>
+                                <div class="decision-actions">
+                                    <a href="{{ route('admin.decision-support.edit', $resource) }}" class="decision-action-icon decision-edit-icon" title="Edit resource" aria-label="Edit resource">
+                                        <i class="fas fa-pen"></i>
+                                    </a>
+                                    <form action="{{ route('admin.decision-support.destroy', $resource) }}" method="POST" class="decision-delete-form" onsubmit="return confirm('Are you sure?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="decision-action-icon decision-delete-icon" title="Delete resource" aria-label="Delete resource">
+                                        <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="6" class="text-center py-4">
+                                <p class="text-muted">No resources found.</p>
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+            @if (method_exists($resources, 'links'))
+                {{ $resources->links() }}
+            @endif
+        </div>
+    </div>
+</div>
+</div>
+
+@include('dashboard.modals.decision-support')

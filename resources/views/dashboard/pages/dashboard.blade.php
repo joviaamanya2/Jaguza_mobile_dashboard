@@ -1,5 +1,5 @@
   <!-- ===== DASHBOARD ===== -->
-  <div class="page active" id="page-dashboard">
+  <div class="page {{ ($initialPage ?? 'dashboard') === 'dashboard' ? 'active' : '' }}" id="page-dashboard">
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-icon" style="background:#e8f5e9;color:#2e7d32;"><i class="fas fa-users"></i></div>
@@ -122,6 +122,7 @@
       </div>
     </div>
 
+    @if(false)
     <!-- Recent Sickness Reports Section -->
     <div class="section-heading" style="margin-top:32px;">
       <h2><i class="fas fa-file-medical" style="color:#dc3545;margin-right:8px;"></i>Recent Sickness Reports</h2>
@@ -177,3 +178,4 @@
       </div>
     </div>
   </div>
+    @endif

@@ -1,5 +1,5 @@
   <!-- ===== VIDEOS ===== -->
-  <div class="page" id="page-videos">
+  <div class="page {{ ($initialPage ?? 'dashboard') === 'videos' ? 'active' : '' }}" id="page-videos">
     <div class="section-heading">
       <h2><i class="fas fa-play-circle" style="color:#2e7d32;margin-right:8px;"></i>Educational Videos</h2>
       <button class="btn btn-primary" onclick="openAddVideoModal()">+ Upload Video</button>

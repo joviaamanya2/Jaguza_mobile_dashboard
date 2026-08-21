@@ -1,5 +1,5 @@
 <!-- ===== FARMS PAGE ===== -->
-<div class="page" id="page-farms">
+<div class="page {{ ($initialPage ?? 'dashboard') === 'farms' ? 'active' : '' }}" id="page-farms">
     <div class="section-heading">
         <h2><i class="fas fa-warehouse" style="color:#fd7e14;margin-right:8px;"></i>Farms</h2>
         <button class="btn btn-primary" onclick="openAddFarmModal()">+ Add Farm</button>
@@ -77,15 +77,17 @@
                                 {{ ($farm->is_active ?? true) ? 'Active' : 'Inactive' }}
                             </span>
                         </td>
-                        <td>
-                            <button class="btn btn-outline" style="padding:4px 10px;font-size:11px;" 
+                        <td class="farm-actions">
+                            <div class="farm-action-group">
+                            <button type="button" class="farm-action farm-edit-action" title="Edit farm" aria-label="Edit farm"
                                     onclick="editFarm({{ $farm->id }})">
-                                <i class="fas fa-edit"></i>
+                                <i class="fas fa-pen"></i><span>Edit</span>
                             </button>
-                            <button class="btn btn-outline" style="padding:4px 10px;font-size:11px;color:var(--red);" 
+                            <button type="button" class="farm-action farm-delete-action" title="Delete farm" aria-label="Delete farm"
                                     onclick="deleteFarm({{ $farm->id }})">
-                                <i class="fas fa-trash"></i>
+                                <i class="fas fa-trash"></i><span>Delete</span>
                             </button>
+                            </div>
                         </td>
                     </tr>
                     @empty

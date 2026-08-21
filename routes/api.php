@@ -32,6 +32,18 @@ use Illuminate\Support\Facades\Route;
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
+// Public Decision Support routes (no auth needed for viewing)
+Route::prefix('decision-support')->name('api.decision-support.')->group(function () {
+    Route::get('resources', [DecisionSupportController::class, 'index'])->name('index');
+    Route::get('resources/featured', [DecisionSupportController::class, 'featured'])->name('featured');
+    Route::get('resources/{id}', [DecisionSupportController::class, 'show'])->name('show');
+    Route::get('resources/{id}/related', [DecisionSupportController::class, 'related'])->name('related');
+    Route::get('category/{category}', [DecisionSupportController::class, 'byCategory'])->name('category');
+    Route::get('topics', [DecisionSupportController::class, 'topics'])->name('topics');
+    Route::get('animals', [DecisionSupportController::class, 'animals'])->name('animals');
+    Route::get('stats', [DecisionSupportController::class, 'stats'])->name('stats');
+});
+
 // ============================================
 // PROTECTED ROUTES (Authentication Required)
 // ============================================
@@ -106,14 +118,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/diseases/{id}', [DiseaseController::class, 'update']);
     Route::delete('/diseases/{id}', [DiseaseController::class, 'destroy']);
     
-    // ========== DECISION SUPPORT ==========
-    Route::get('/decision-support', [DecisionSupportController::class, 'index']);
-    Route::post('/decision-support', [DecisionSupportController::class, 'store']);
-    Route::get('/decision-support/{id}', [DecisionSupportController::class, 'show']);
-    Route::put('/decision-support/{id}', [DecisionSupportController::class, 'update']);
-    Route::delete('/decision-support/{id}', [DecisionSupportController::class, 'destroy']);
-    Route::get('/decision-support/categories', [DecisionSupportController::class, 'categories']);
-    Route::post('/decision-support/{id}/helpful', [DecisionSupportController::class, 'markHelpful']);
+    // ========== DECISION SUPPORT (Admin CRUD) ==========
+    Route::prefix('decision-support')->name('api.decision-support.')->group(function () {
+        Route::post('/', [DecisionSupportController::class, 'store'])->name('store');
+        Route::put('/{id}', [DecisionSupportController::class, 'update'])->name('update');
+        Route::delete('/{id}', [DecisionSupportController::class, 'destroy'])->name('destroy');
+        Route::post('/{id}/toggle-publish', [DecisionSupportController::class, 'togglePublish'])->name('toggle-publish');
+        Route::post('/{id}/toggle-featured', [DecisionSupportController::class, 'toggleFeatured'])->name('toggle-featured');
+    });
     
     // ========== VIDEOS ==========
     Route::get('/videos', [VideoController::class, 'index']);

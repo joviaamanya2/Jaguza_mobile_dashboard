@@ -1,5 +1,5 @@
   <!-- ===== ANALYTICS ===== -->
-  <div class="page" id="page-analytics">
+  <div class="page {{ ($initialPage ?? 'dashboard') === 'analytics' ? 'active' : '' }}" id="page-analytics">
     <div class="section-heading">
       <h2><i class="fas fa-chart-line" style="color:#2e7d32;margin-right:8px;"></i>Analytics</h2>
       <button class="btn btn-outline" onclick="exportReport()">Export Report</button>

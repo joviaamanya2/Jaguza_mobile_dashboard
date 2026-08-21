@@ -10,6 +10,10 @@ class AdminMiddleware
     public function handle(Request $request, Closure $next)
     {
         if (!auth()->check()) {
+            if (!$request->expectsJson()) {
+                return redirect()->route('login');
+            }
+
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthenticated'
@@ -17,6 +21,14 @@ class AdminMiddleware
         }
 
         if (auth()->user()->role !== 'admin') {
+            if (!$request->expectsJson()) {
+                auth()->logout();
+
+                return redirect()->route('login')->withErrors([
+                    'email' => 'Admin access is required to view the dashboard.',
+                ]);
+            }
+
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized. Admin access required.'

@@ -12,7 +12,7 @@ class AnimalFactory extends Factory
 {
     public function definition(): array
     {
-        $type = fake()->randomElement(['cattle', 'goat', 'sheep', 'pig', 'poultry', 'rabbit', 'horse', 'other']);
+        $type = fake()->randomElement(['cattle', 'poultry', 'goats', 'pigs', 'sheep', 'rabbits', 'fish', 'other']);
 
         return [
             'identification_number' => strtoupper(Str::random(3)) . '-' . fake()->unique()->numberBetween(1000, 999999),
@@ -22,7 +22,7 @@ class AnimalFactory extends Factory
             'gender' => fake()->randomElement(['male', 'female']),
             'age' => fake()->numberBetween(1, 120),
             'weight' => fake()->randomFloat(2, 5, 800),
-            'health_status' => fake()->randomElement(['healthy', 'healthy', 'healthy', 'sick', 'treatment', 'recovering']),
+            'health_status' => fake()->randomElement(['healthy', 'healthy', 'healthy', 'sick', 'injured', 'recovering']),
             'date_bought' => fake()->dateTimeBetween('-2 years', 'now')->format('Y-m-d'),
             'purchase_price' => fake()->randomFloat(2, 50000, 3000000),
             'notes' => fake()->optional()->sentence(),

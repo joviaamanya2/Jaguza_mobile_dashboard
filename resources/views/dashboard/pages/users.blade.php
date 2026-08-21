@@ -1,4 +1,4 @@
-  <div class="page" id="page-users">
+  <div class="page {{ ($initialPage ?? 'dashboard') === 'users' ? 'active' : '' }}" id="page-users">
     <div class="section-heading">
       <h2><i class="fas fa-users" style="color:#2e7d32;margin-right:8px;"></i>Users Management</h2>
       <button class="btn btn-primary" onclick="openAddUserModal()">+ Add User</button>

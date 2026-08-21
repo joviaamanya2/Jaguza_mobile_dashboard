@@ -1,5 +1,5 @@
   <!-- ===== NOTIFICATIONS ===== -->
-  <div class="page" id="page-notifications">
+  <div class="page {{ ($initialPage ?? 'dashboard') === 'notifications' ? 'active' : '' }}" id="page-notifications">
     <div class="section-heading">
       <h2><i class="fas fa-bell" style="color:#fd7e14;margin-right:8px;"></i>Notifications</h2>
       <button class="btn btn-primary" onclick="openAddNotificationModal()">+ Send Notification</button>

@@ -128,26 +128,8 @@
     <!-- ===== MAIN CONTENT ===== -->
     <div id="main-wrap">
 
-        <!-- ===== PAGES ===== -->
-        @include('dashboard.pages.dashboard')
-        @include('dashboard.pages.users')
-        @include('dashboard.pages.doctors')
-        @include('dashboard.pages.extension-workers')
-        @include('dashboard.pages.sickness')
-        @include('dashboard.pages.disease')
-        @include('dashboard.pages.farms')
-        @include('dashboard.pages.livestock')
-        @include('dashboard.pages.videos')
-        @include('dashboard.pages.ads')
-        @include('dashboard.pages.gestation')
-        @include('dashboard.pages.notifications')
-        @include('dashboard.pages.analytics')
-        @include('dashboard.pages.vaccinations')
-        @include('dashboard.pages.marketplace')
-        @include('dashboard.pages.weather')
-        @include('dashboard.pages.aichat')
-        @include('dashboard.pages.decision')
-        @include('dashboard.pages.settings')
+        <!-- ===== CURRENT PAGE ===== -->
+        @include('dashboard.pages.' . ($initialPage ?? 'dashboard'))
 
     </div>
 

@@ -219,6 +219,7 @@
     .btn { padding:8px 20px; border-radius:8px; font-size:13px; font-weight:500; cursor:pointer; border:none; transition:all .2s; }
     .btn:hover { opacity:.9; transform:translateY(-1px); box-shadow:0 4px 12px rgba(46,125,50,.2); }
     .btn-primary { background:linear-gradient(135deg, var(--green-600), var(--green-700)); color:#fff; }
+    .btn-secondary { background:#eef1f4; color:#45515d; border:1px solid #dce2e8; }
     .btn-outline { background:transparent; border:1px solid #c8d0d8; color:#1a1a2e; }
     .btn-outline:hover { border-color:#66bb6a; color:#1b5e20; background:#e8f5e9; }
 
@@ -323,6 +324,16 @@
     .animal-card h4 { font-size:15px; font-weight:600; color:#1a1a2e; }
     .animal-card p { font-size:12px; color:#6a7a8a; margin-top:4px; }
     .animal-stat { font-size:20px; font-weight:700; color:#2e7d32; margin-top:8px; }
+    .livestock-summary-card { padding:14px; min-height:145px; }
+    .livestock-summary-card .animal-emoji { font-size:30px; margin-bottom:4px; }
+    .livestock-summary-card .animal-stat { font-size:18px; margin-top:5px; }
+    .livestock-row-emoji { font-size:20px; margin-right:6px; vertical-align:middle; }
+    .livestock-actions { white-space:nowrap; vertical-align:middle; }
+    .livestock-action-group { display:flex; align-items:center; gap:6px; flex-wrap:nowrap; }
+    .livestock-action { width:32px; height:32px; display:inline-flex; align-items:center; justify-content:center; border:0; border-radius:7px; cursor:pointer; transition:all .2s; }
+    .livestock-edit-action { background:#e8f1ff; color:#2563eb; }
+    .livestock-delete-action { background:#fde8e8; color:#dc3545; }
+    .livestock-action:hover { transform:translateY(-1px); box-shadow:0 3px 8px rgba(0,0,0,.12); }
 
     .ad-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:18px; }
     .ad-card { 
@@ -389,6 +400,64 @@
         border-bottom: 2px solid #e8ecf1;
     }
     .modal-header h3 { font-size: 20px; font-weight: 700; color: #1a1a2e; margin: 0; }
+    .decision-resource-modal-box { max-width: 720px; }
+    .modal-subtitle { margin-top: 4px; color: #6a7a8a; font-size: 13px; }
+    .form-error { display: block; color: #dc3545; margin-top: 5px; font-size: 12px; }
+    .decision-checks { display: flex; flex-direction: column; justify-content: center; gap: 12px; }
+    .decision-checks label { font-size: 13px; color: #4d5965; font-weight: 500; }
+    .decision-checks input { accent-color: #2e7d32; margin-right: 7px; }
+    .decision-action-icon { width:32px; height:32px; display:inline-flex; align-items:center; justify-content:center; border:0; border-radius:7px; cursor:pointer; text-decoration:none; margin:0 3px; transition:all .2s; }
+    .decision-edit-icon { background:#e8f1ff; color:#2563eb; }
+    .decision-delete-icon { background:#fde8e8; color:#dc3545; }
+    .decision-action-icon:hover { transform:translateY(-1px); box-shadow:0 3px 8px rgba(0,0,0,.12); }
+    .decision-delete-form { display:inline-block; margin:0; }
+    .decision-actions { display:flex; align-items:center; gap:5px; }
+    .extension-worker-actions { white-space:nowrap; vertical-align:middle; }
+    .extension-worker-action-group { display:flex; align-items:center; gap:7px; flex-wrap:nowrap; }
+    .extension-worker-action { display:inline-flex; align-items:center; justify-content:center; gap:6px; min-width:74px; height:32px; padding:0 10px; border:1px solid transparent; border-radius:7px; cursor:pointer; font:500 11px 'Inter',sans-serif; transition:all .2s; white-space:nowrap; }
+    .extension-worker-edit { background:#e8f1ff; color:#2563eb; border-color:#cfe0ff; }
+    .extension-worker-delete { background:#fde8e8; color:#dc3545; border-color:#f8caca; }
+    .extension-worker-action:hover { transform:translateY(-1px); box-shadow:0 3px 8px rgba(0,0,0,.12); }
+    .farm-actions { white-space:nowrap; vertical-align:middle; }
+    .farm-action-group { display:flex; align-items:center; gap:7px; flex-wrap:nowrap; }
+    .farm-action { display:inline-flex; align-items:center; justify-content:center; gap:6px; min-width:68px; height:32px; padding:0 10px; border:1px solid transparent; border-radius:7px; cursor:pointer; font:500 11px 'Inter',sans-serif; transition:all .2s; white-space:nowrap; }
+    .farm-edit-action { background:#e8f1ff; color:#2563eb; border-color:#cfe0ff; }
+    .farm-delete-action { background:#fde8e8; color:#dc3545; border-color:#f8caca; }
+    .farm-action:hover { transform:translateY(-1px); box-shadow:0 3px 8px rgba(0,0,0,.12); }
+    .disease-page-heading { display:flex; align-items:center; justify-content:space-between; gap:20px; }
+    .disease-page-heading p { margin:6px 0 0; color:#7b8794; font-size:13px; }
+    .disease-table th { white-space:nowrap; }
+    .disease-table td { vertical-align:middle; max-width:210px; }
+    .disease-name-cell { display:flex; align-items:center; gap:10px; min-width:170px; }
+    .disease-thumbnail { width:42px; height:42px; object-fit:cover; border-radius:9px; flex:none; }
+    .disease-thumbnail-placeholder { display:inline-flex; align-items:center; justify-content:center; background:#fff3e0; color:#fd7e14; }
+    .disease-modal-box { max-width:680px; }
+    .form-help { display:block; color:#7b8794; font-size:11px; margin-top:5px; }
+    .disease-actions { white-space:nowrap; }
+    .disease-action-btn { width:32px; height:32px; border:0; border-radius:7px; cursor:pointer; margin-right:5px; transition:all .2s; }
+    .disease-edit-btn { background:#e8f1ff; color:#2563eb; }
+    .disease-delete-btn { background:#fde8e8; color:#dc3545; }
+    .disease-action-btn:hover { transform:translateY(-1px); box-shadow:0 3px 8px rgba(0,0,0,.12); }
+    @media (max-width: 700px) { .disease-page-heading { align-items:flex-start; flex-direction:column; } .disease-page-heading .btn { width:100%; } }
+
+    .decision-page-container { max-width: 1500px; margin: 0 auto; }
+    .decision-page-header { display:flex; align-items:center; justify-content:space-between; gap:24px; margin-bottom:24px; }
+    .decision-page-header h1 { margin:0; font-size:26px; color:#1a1a2e; }
+    .decision-page-header p { margin:6px 0 0; color:#6a7a8a; font-size:13px; }
+    .decision-filter-card { padding:18px 20px; margin-bottom:24px; }
+    .decision-filters { display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap; }
+    .decision-filter-field { flex:1 1 190px; min-width:150px; }
+    .decision-filter-field .form-label { display:block; margin-bottom:7px; font-size:13px; font-weight:600; color:#1a1a2e; }
+    .decision-filter-field .form-select { width:100%; padding:10px 12px; border:1px solid #dce2e8; border-radius:8px; background:#f8f9fa; color:#1a1a2e; font:inherit; font-size:13px; }
+    .decision-filter-field .form-select:focus { outline:none; border-color:#2e7d32; box-shadow:0 0 0 3px rgba(46,125,50,.1); }
+    .decision-filter-actions { display:flex; gap:10px; flex:0 0 auto; }
+    .decision-filter-actions .btn { min-height:39px; }
+    @media (max-width: 700px) {
+      .decision-page-header { align-items:flex-start; flex-direction:column; }
+      .decision-page-header .btn { width:100%; }
+      .decision-filter-field, .decision-filter-actions { width:100%; flex-basis:100%; }
+      .decision-filter-actions .btn { flex:1; }
+    }
     .modal-close {
         background: none;
         border: none;

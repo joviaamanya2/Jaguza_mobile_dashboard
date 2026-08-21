@@ -1,5 +1,5 @@
   <!-- ===== AI CHAT ===== -->
-  <div class="page" id="page-aichat">
+  <div class="page {{ ($initialPage ?? 'dashboard') === 'aichat' ? 'active' : '' }}" id="page-aichat">
     <div class="section-heading">
       <h2><i class="fas fa-robot" style="color:#0d6efd;margin-right:8px;"></i>AI Chat (Vet Bot)</h2>
       <button class="btn btn-outline" onclick="clearChatHistory()"><i class="fas fa-trash"></i> Clear History</button>

@@ -11,6 +11,7 @@ class Disease extends Model
 
     protected $fillable = [
         'name',
+        'thumbnail',
         'scientific_name',
         'species_affected',
         'symptoms',

@@ -1,5 +1,5 @@
   <!-- ===== MARKETPLACE ===== -->
-  <div class="page" id="page-marketplace">
+  <div class="page {{ ($initialPage ?? 'dashboard') === 'marketplace' ? 'active' : '' }}" id="page-marketplace">
     <div class="section-heading">
       <h2><i class="fas fa-store" style="color:#fd7e14;margin-right:8px;"></i>Market Place</h2>
       <button class="btn btn-primary" onclick="openAddListingModal()">+ Add Listing</button>

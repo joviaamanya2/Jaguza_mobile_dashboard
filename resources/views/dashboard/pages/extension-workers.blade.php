@@ -1,5 +1,5 @@
   <!-- ===== EXTENSION WORKERS ===== -->
-  <div class="page" id="page-extension-workers">
+  <div class="page {{ ($initialPage ?? 'dashboard') === 'extension-workers' ? 'active' : '' }}" id="page-extension-workers">
     <div class="section-heading">
       <h2><i class="fas fa-user-tie" style="color:#e65100;margin-right:8px;"></i>Extension Workers</h2>
       <button class="btn btn-primary" onclick="openAddExtensionWorkerModal()">+ Add Extension Worker</button>
@@ -82,13 +82,15 @@
                 </span>
                 <br><small style="color:#6a7a8a;font-size:10px;">click to toggle</small>
               </td>
-              <td>
-                <button class="btn btn-outline" style="padding:4px 10px;font-size:11px;" onclick="editExtensionWorker({{ $worker->id }})">
-                  <i class="fas fa-edit"></i> Edit
+              <td class="extension-worker-actions">
+                <div class="extension-worker-action-group">
+                <button type="button" class="extension-worker-action extension-worker-edit" title="Edit extension worker" onclick="editExtensionWorker({{ $worker->id }})">
+                  <i class="fas fa-pen"></i><span>Edit</span>
                 </button>
-                <button class="btn btn-outline" style="padding:4px 10px;font-size:11px;color:var(--red);" onclick="deleteExtensionWorker({{ $worker->id }})">
-                  <i class="fas fa-trash"></i>
+                <button type="button" class="extension-worker-action extension-worker-delete" title="Delete extension worker" onclick="deleteExtensionWorker({{ $worker->id }})">
+                  <i class="fas fa-trash"></i><span>Delete</span>
                 </button>
+                </div>
               </td>
             </tr>
             @empty
@@ -104,4 +106,3 @@
       </div>
     </div>
   </div>
-

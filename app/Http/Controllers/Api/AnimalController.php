@@ -2,191 +2,150 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
 use App\Models\Animal;
-use App\Models\SicknessReport;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage;
 
 class AnimalController extends Controller
-{
-    public function index(Request $request)
-    {
-        $user = $request->user();
-        
-        if ($user->isAdmin()) {
-            $animals = Animal::with(['farm', 'owner'])->get();
-        } else {
-            $animals = Animal::with(['farm', 'owner'])
-                ->where('owner_id', $user->id)
-                ->get();
-        }
 
-        return response()->json([
-            'success' => true,
-            'data' => $animals
-        ]);
+{
+     public function index()
+    {
+        $animals = Animal::with(['farm', 'owner'])->get();
+        return response()->json($animals);
     }
 
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'identification_number' => 'required|unique:animals',
+            'identification_number' => 'nullable|string|unique:animals,identification_number',
             'name' => 'nullable|string|max:255',
-            'type' => 'required|in:' . implode(',', Animal::TYPES),
-            'breed' => 'required|string|max:100',
-            'gender' => 'required|in:' . implode(',', Animal::GENDERS),
-            'age' => 'required|integer|min:0',
+            'type' => 'required|string|in:' . implode(',', Animal::TYPES),
+            'breed' => 'nullable|string|max:255',
+            'gender' => 'nullable|in:' . implode(',', Animal::GENDERS),
+            'age' => 'nullable|integer|min:0',
             'weight' => 'nullable|numeric|min:0',
-            'health_status' => 'in:' . implode(',', Animal::HEALTH_STATUS),
+            'health_status' => 'nullable|string|in:' . implode(',', Animal::HEALTH_STATUSES),
             'farm_id' => 'required|exists:farms,id',
+            'owner_id' => 'nullable|exists:users,id',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'date_bought' => 'nullable|date',
             'purchase_price' => 'nullable|numeric|min:0',
+            'notes' => 'nullable|string',
+            'is_active' => 'nullable|boolean'
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $animal = Animal::create(array_merge(
-            $request->all(),
-            ['owner_id' => $request->user()->id]
-        ));
+        $data = $request->all();
+        
+        // Normalize type to lowercase
+        if (isset($data['type'])) {
+            $data['type'] = strtolower($data['type']);
+        }
+        
+        // Normalize gender to lowercase
+        if (isset($data['gender'])) {
+            $data['gender'] = strtolower($data['gender']);
+        }
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Animal created successfully',
-            'data' => $animal
-        ], 201);
+        // Set owner_id to the authenticated user if not provided
+        if (!isset($data['owner_id']) && auth()->user()) {
+            $data['owner_id'] = auth()->user()->id;
+        }
+
+        $animal = Animal::create($data);
+        return response()->json($animal, 201);
     }
+
 
     public function show($id)
     {
-        $animal = Animal::with(['farm', 'owner', 'sicknessReports', 'vaccinations'])->find($id);
-        
-        if (!$animal) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Animal not found'
-            ], 404);
-        }
-
-        return response()->json([
-            'success' => true,
-            'data' => $animal
-        ]);
+        $animal = Animal::with(['farm', 'owner'])->findOrFail($id);
+        return response()->json($animal);
     }
 
     public function update(Request $request, $id)
     {
-        $animal = Animal::find($id);
-        
-        if (!$animal) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Animal not found'
-            ], 404);
-        }
+        $animal = Animal::findOrFail($id);
 
         $validator = Validator::make($request->all(), [
-            'name' => 'nullable|string|max:255',
-            'breed' => 'nullable|string|max:100',
+            'identification_number' => 'nullable|string|unique:animals,identification_number,' . $id,
+            'name' => 'sometimes|required|string|max:255',
+            'type' => 'sometimes|required|string|in:' . implode(',', Animal::TYPES),
+            'breed' => 'nullable|string|max:255',
+            'gender' => 'nullable|in:' . implode(',', Animal::GENDERS),
+            'age' => 'nullable|integer|min:0',
             'weight' => 'nullable|numeric|min:0',
-            'health_status' => 'in:' . implode(',', Animal::HEALTH_STATUS),
+            'health_status' => 'nullable|string|in:' . implode(',', Animal::HEALTH_STATUSES),
+            'farm_id' => 'sometimes|required|exists:farms,id',
+            'owner_id' => 'sometimes|required|exists:users,id',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'date_bought' => 'nullable|date',
+            'purchase_price' => 'nullable|numeric|min:0',
             'notes' => 'nullable|string',
+            'is_active' => 'nullable|boolean'
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $animal->update($request->all());
+        $data = $request->all();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Animal updated successfully',
-            'data' => $animal
-        ]);
+        // Handle photo upload
+        if ($request->hasFile('photo')) {
+            // Delete old photo if exists
+            if ($animal->photo) {
+                Storage::disk('public')->delete($animal->photo);
+            }
+            $path = $request->file('photo')->store('animals', 'public');
+            $data['photo'] = $path;
+        }
+
+        $animal->update($data);
+        return response()->json($animal);
     }
 
     public function destroy($id)
     {
-        $animal = Animal::find($id);
+        $animal = Animal::findOrFail($id);
         
-        if (!$animal) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Animal not found'
-            ], 404);
+        // Delete photo if exists
+        if ($animal->photo) {
+            Storage::disk('public')->delete($animal->photo);
         }
-
+        
         $animal->delete();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Animal deleted successfully'
-        ]);
+        return response()->json(null, 204);
     }
 
-    public function updateHealth(Request $request, $id)
+    // Additional endpoints
+    public function getByType($type)
     {
-        $animal = Animal::find($id);
-        
-        if (!$animal) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Animal not found'
-            ], 404);
-        }
-
-        $validator = Validator::make($request->all(), [
-            'health_status' => 'required|in:' . implode(',', Animal::HEALTH_STATUS),
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        $animal->update(['health_status' => $request->health_status]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Health status updated successfully',
-            'data' => $animal
-        ]);
-    }
-
-    public function healthHistory($id)
-    {
-        $animal = Animal::find($id);
-        
-        if (!$animal) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Animal not found'
-            ], 404);
-        }
-
-        // Sickness reports are no longer tied to an individual animal record;
-        // they are filed against an animal *type*. Return reports that match
-        // this animal's type so the history view still has relevant data.
-        $reports = SicknessReport::where('affected_animal_type', $animal->type)
-            ->with('user')
-            ->orderBy('created_at', 'desc')
+        $animals = Animal::with(['farm', 'owner'])
+            ->ofType($type)
             ->get();
+        return response()->json($animals);
+    }
 
-        return response()->json([
-            'success' => true,
-            'data' => $reports
-        ]);
+    public function getActive()
+    {
+        $animals = Animal::with(['farm', 'owner'])
+            ->active()
+            ->get();
+        return response()->json($animals);
+    }
+
+    public function getHealthy()
+    {
+        $animals = Animal::with(['farm', 'owner'])
+            ->healthy()
+            ->get();
+        return response()->json($animals);
     }
 }
