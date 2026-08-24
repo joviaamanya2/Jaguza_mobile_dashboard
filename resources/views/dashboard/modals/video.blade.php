@@ -19,26 +19,41 @@
             </div>
             
             <div class="form-group">
-                <label>Video URL <span class="required">*</span></label>
-                <input type="url" id="video_url" class="form-control" placeholder="https://www.youtube.com/watch?v=..." required>
-                <small style="color:#6a7a8a;">Supports YouTube, Vimeo, and direct video URLs</small>
+                <label>Video File</label>
+                <input type="file" id="video_file" class="form-control" accept="video/mp4,video/quicktime,video/webm,video/x-msvideo">
+                <small style="color:#6a7a8a;">Upload MP4, MOV, WEBM, or AVI. Maximum 50 MB.</small>
+            </div>
+
+            <div class="form-group">
+                <label>Video URL <span class="required">*</span> <small>(required only when no file is selected)</small></label>
+                <input type="url" id="video_url" class="form-control" placeholder="https://www.youtube.com/watch?v=...">
+                <small style="color:#6a7a8a;">Use a URL or upload a video file.</small>
             </div>
             
             <div class="form-group">
+                <label>Thumbnail Image</label>
+                <input type="file" id="video_thumbnail_file" class="form-control" accept="image/jpeg,image/png,image/webp">
+                <small style="color:#6a7a8a;">JPG, PNG, or WEBP. Maximum 4 MB.</small>
+            </div>
+
+            <div class="form-group">
                 <label>Thumbnail URL</label>
                 <input type="url" id="video_thumbnail" class="form-control" placeholder="https://example.com/thumbnail.jpg">
-                <small style="color:#6a7a8a;">Leave empty for auto-generated thumbnail</small>
+                <small style="color:#6a7a8a;">Use a URL or upload a thumbnail image.</small>
             </div>
             
             <div class="form-row">
                 <div class="form-group">
                     <label>Category</label>
-                    <select id="video_category" class="form-control">
+                    <select id="video_category" class="form-control" onchange="toggleNewCategoryInput()">
                         <option value="">Select Category</option>
                         @foreach($videoCategories ?? [] as $category)
                         <option value="{{ $category->id }}">{{ $category->name }}</option>
                         @endforeach
+                        <option value="__new__">+ Add New Category</option>
                     </select>
+                    <input type="text" id="video_new_category_name" class="form-control" placeholder="New category name" style="display:none;margin-top:8px;">
+                    <small id="video_new_category_hint" style="display:none;color:#6a7a8a;">This category will be created when you upload the video.</small>
                 </div>
                 <div class="form-group">
                     <label>Duration</label>

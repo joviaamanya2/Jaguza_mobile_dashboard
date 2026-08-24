@@ -14,8 +14,11 @@
             <thead>
                 <tr>
                     <th>#</th>
-                                        <th>Name,specialization,location,phone,license number</th>
-
+                    <th>Name</th>
+                    <th>Specialization</th>
+                    <th>Location</th>
+                    <th>Phone</th>
+                    <th>License Number</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -23,7 +26,11 @@
                 @forelse($doctors as $item)
                 <tr>
                     <td>{{ $loop->iteration }}</td>
-                                        <td>{{ $item->name,specialization,location,phone,license_number ?? 'N/A' }}</td>
+                    <td>{{ $item->full_name ?? 'N/A' }}</td>
+                    <td>{{ $item->specialization ?? 'N/A' }}</td>
+                    <td>{{ $item->location ?? 'N/A' }}</td>
+                    <td>{{ $item->phone_number ?? 'N/A' }}</td>
+                    <td>{{ $item->license_number ?? 'N/A' }}</td>
 
                     <td>
                         <button class="btn btn-outline" style="padding:4px 10px;font-size:11px;" onclick="editDoctor($item->id)">

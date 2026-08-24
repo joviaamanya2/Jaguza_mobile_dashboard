@@ -11,23 +11,57 @@ use Illuminate\Support\Facades\Storage;
 class AnimalController extends Controller
 
 {
-     public function index()
+    // Keep validation independent of model constants so older deployments do
+    // not fail with "Undefined constant App\\Models\\Animal::TYPES".
+    private const ANIMAL_TYPES = [
+        'cattle', 'cow', 'goat', 'goats', 'sheep', 'pig', 'pigs', 'poultry', 'chicken', 'rabbit', 'rabbits', 'horse', 'horses', 'fish', 'other'
+    ];
+
+    private const GENDERS = ['male', 'female'];
+
+    private const HEALTH_STATUSES = [
+        'healthy', 'sick', 'treatment', 'quarantine', 'recovering', 'critical'
+    ];
+
+    public function index()
     {
         $animals = Animal::with(['farm', 'owner'])->get();
-        return response()->json($animals);
+        return response()->json([
+            'success' => true,
+            'data' => $animals
+        ]);
     }
 
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        $data = $request->all();
+
+        // Convert empty strings to null for optional fields
+        foreach (['identification_number', 'name', 'breed', 'gender', 'age', 'weight', 'health_status', 'photo', 'date_bought', 'purchase_price', 'notes', 'owner_id'] as $field) {
+            if (isset($data[$field]) && is_string($data[$field]) && trim($data[$field]) === '') {
+                $data[$field] = null;
+            }
+        }
+
+        // Standardize type
+        if (isset($data['type'])) {
+            $data['type'] = strtolower(trim($data['type']));
+        }
+
+        // Standardize gender
+        if (isset($data['gender'])) {
+            $data['gender'] = strtolower(trim($data['gender']));
+        }
+
+        $validator = Validator::make($data, [
             'identification_number' => 'nullable|string|unique:animals,identification_number',
             'name' => 'nullable|string|max:255',
-            'type' => 'required|string|in:' . implode(',', Animal::TYPES),
+            'type' => 'required|string',
             'breed' => 'nullable|string|max:255',
-            'gender' => 'nullable|in:' . implode(',', Animal::GENDERS),
+            'gender' => 'nullable|in:' . implode(',', self::GENDERS),
             'age' => 'nullable|integer|min:0',
             'weight' => 'nullable|numeric|min:0',
-            'health_status' => 'nullable|string|in:' . implode(',', Animal::HEALTH_STATUSES),
+            'health_status' => 'nullable|string',
             'farm_id' => 'required|exists:farms,id',
             'owner_id' => 'nullable|exists:users,id',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
@@ -38,19 +72,10 @@ class AnimalController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-
-        $data = $request->all();
-        
-        // Normalize type to lowercase
-        if (isset($data['type'])) {
-            $data['type'] = strtolower($data['type']);
-        }
-        
-        // Normalize gender to lowercase
-        if (isset($data['gender'])) {
-            $data['gender'] = strtolower($data['gender']);
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
         }
 
         // Set owner_id to the authenticated user if not provided
@@ -59,7 +84,12 @@ class AnimalController extends Controller
         }
 
         $animal = Animal::create($data);
-        return response()->json($animal, 201);
+        return response()->json([
+            'success' => true,
+            'message' => 'Animal created successfully',
+            'id' => $animal->id,
+            'data' => $animal
+        ], 201);
     }
 
 
@@ -76,12 +106,12 @@ class AnimalController extends Controller
         $validator = Validator::make($request->all(), [
             'identification_number' => 'nullable|string|unique:animals,identification_number,' . $id,
             'name' => 'sometimes|required|string|max:255',
-            'type' => 'sometimes|required|string|in:' . implode(',', Animal::TYPES),
+            'type' => 'sometimes|required|string|in:' . implode(',', self::ANIMAL_TYPES),
             'breed' => 'nullable|string|max:255',
-            'gender' => 'nullable|in:' . implode(',', Animal::GENDERS),
+            'gender' => 'nullable|in:' . implode(',', self::GENDERS),
             'age' => 'nullable|integer|min:0',
             'weight' => 'nullable|numeric|min:0',
-            'health_status' => 'nullable|string|in:' . implode(',', Animal::HEALTH_STATUSES),
+            'health_status' => 'nullable|string|in:' . implode(',', self::HEALTH_STATUSES),
             'farm_id' => 'sometimes|required|exists:farms,id',
             'owner_id' => 'sometimes|required|exists:users,id',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',

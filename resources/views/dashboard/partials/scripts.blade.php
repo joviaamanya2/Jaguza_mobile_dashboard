@@ -945,8 +945,275 @@ function saveReport() {
 
 function openAddDiseaseModal() { openModal('diseaseModal'); }
 function openAddFarmModal() { alert('Add Farm functionality coming soon!'); }
-function openAddVideoModal() { alert('Upload Video functionality coming soon!'); }
-function openAddAdModal() { alert('Create Ad functionality coming soon!'); }
+function resetVideoForm() {
+    const form = document.getElementById('videoForm');
+    if (form) form.reset();
+    document.getElementById('videoId').value = '';
+    document.getElementById('video_published').checked = true;
+    document.getElementById('videoModalTitle').textContent = 'Upload Video';
+    document.getElementById('videoSubmitBtn').textContent = 'Upload Video';
+    toggleNewCategoryInput();
+}
+
+function openAddVideoModal() {
+    resetVideoForm();
+    openModal('videoModal');
+}
+
+function toggleNewCategoryInput() {
+    const isNew = document.getElementById('video_category').value === '__new__';
+    document.getElementById('video_new_category_name').style.display = isNew ? 'block' : 'none';
+    document.getElementById('video_new_category_hint').style.display = isNew ? 'block' : 'none';
+    if (!isNew) document.getElementById('video_new_category_name').value = '';
+}
+
+async function resolveVideoCategoryId() {
+    const categorySelect = document.getElementById('video_category');
+    if (categorySelect.value !== '__new__') {
+        return categorySelect.value;
+    }
+
+    const name = document.getElementById('video_new_category_name').value.trim();
+    if (!name) {
+        throw new Error('Enter a name for the new category.');
+    }
+
+    const response = await fetch(`${ADMIN_URL}/video-categories`, {
+        method: 'POST',
+        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF_TOKEN },
+        body: JSON.stringify({ name }),
+    });
+    const data = await response.json();
+    if (!response.ok || !data.success) {
+        const errors = data.errors ? Object.values(data.errors).flat().join(', ') : data.message;
+        throw new Error(errors || 'New category could not be created.');
+    }
+
+    const option = document.createElement('option');
+    option.value = data.data.id;
+    option.textContent = data.data.name;
+    categorySelect.insertBefore(option, categorySelect.lastElementChild);
+    categorySelect.value = data.data.id;
+    toggleNewCategoryInput();
+
+    return data.data.id;
+}
+
+async function saveVideo() {
+    const id = document.getElementById('videoId').value;
+    const submitButton = document.getElementById('videoSubmitBtn');
+
+    if (!document.getElementById('video_category').value) {
+        showToast('Select an Explore category first.', 'error');
+        return;
+    }
+    const videoFile = document.getElementById('video_file').files[0];
+    if (!videoFile && !document.getElementById('video_url').value.trim()) {
+        showToast('Select a video file or provide a video URL.', 'error');
+        return;
+    }
+
+    submitButton.disabled = true;
+    submitButton.textContent = id ? 'Updating...' : 'Uploading...';
+    try {
+        const categoryId = await resolveVideoCategoryId();
+
+        const payload = new FormData();
+        payload.append('title', document.getElementById('video_title').value.trim());
+        payload.append('description', document.getElementById('video_description').value.trim());
+        payload.append('video_url', document.getElementById('video_url').value.trim());
+        payload.append('thumbnail_url', document.getElementById('video_thumbnail').value.trim());
+        payload.append('category_id', categoryId);
+        payload.append('duration', document.getElementById('video_duration').value.trim());
+        payload.append('platform', document.getElementById('video_platform').value);
+        payload.append('tags', document.getElementById('video_tags').value);
+        payload.append('is_featured', document.getElementById('video_featured').checked ? '1' : '0');
+        payload.append('is_published', document.getElementById('video_published').checked ? '1' : '0');
+        const thumbnailFile = document.getElementById('video_thumbnail_file').files[0];
+        if (videoFile) payload.append('video_file', videoFile);
+        if (thumbnailFile) payload.append('thumbnail_file', thumbnailFile);
+
+        const response = await fetch(id ? `${ADMIN_URL}/videos/${id}` : `${ADMIN_URL}/videos`, {
+            method: id ? 'PUT' : 'POST',
+            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': CSRF_TOKEN },
+            body: payload,
+        });
+        const data = await response.json();
+        if (!response.ok || !data.success) {
+            const errors = data.errors ? Object.values(data.errors).flat().join(', ') : data.message;
+            throw new Error(errors || 'Video could not be saved.');
+        }
+        closeModal('videoModal');
+        showToast(id ? 'Video updated successfully.' : 'Video uploaded successfully.');
+        setTimeout(() => window.location.reload(), 700);
+    } catch (error) {
+        showToast(error.message || 'Video upload failed.', 'error');
+        submitButton.disabled = false;
+        submitButton.textContent = id ? 'Update Video' : 'Upload Video';
+    }
+}
+function resetVideoCategoryForm() {
+    const form = document.getElementById('videoCategoryForm');
+    if (form) form.reset();
+    document.getElementById('video_category_id').value = '';
+    document.getElementById('videoCategoryModalTitle').textContent = 'Add Category';
+    document.getElementById('videoCategorySubmitBtn').textContent = 'Add Category';
+}
+
+function editCategory(id, name, description) {
+    resetVideoCategoryForm();
+    document.getElementById('video_category_id').value = id;
+    document.getElementById('video_category_name').value = name || '';
+    document.getElementById('video_category_description').value = description || '';
+    document.getElementById('videoCategoryModalTitle').textContent = 'Edit Category';
+    document.getElementById('videoCategorySubmitBtn').textContent = 'Update Category';
+    openModal('videoCategoryModal');
+}
+
+async function saveVideoCategory() {
+    const id = document.getElementById('video_category_id').value;
+    const submitButton = document.getElementById('videoCategorySubmitBtn');
+    const payload = {
+        name: document.getElementById('video_category_name').value.trim(),
+        description: document.getElementById('video_category_description').value.trim(),
+    };
+
+    if (!payload.name) {
+        showToast('Category name is required.', 'error');
+        return;
+    }
+
+    submitButton.disabled = true;
+    submitButton.textContent = id ? 'Updating...' : 'Adding...';
+    try {
+        const response = await fetch(id ? `${ADMIN_URL}/video-categories/${id}` : `${ADMIN_URL}/video-categories`, {
+            method: id ? 'PUT' : 'POST',
+            headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF_TOKEN },
+            body: JSON.stringify(payload),
+        });
+        const data = await response.json();
+        if (!response.ok || !data.success) {
+            const errors = data.errors ? Object.values(data.errors).flat().join(', ') : data.message;
+            throw new Error(errors || 'Category could not be saved.');
+        }
+        closeModal('videoCategoryModal');
+        showToast(id ? 'Category updated successfully.' : 'Category created successfully.');
+        setTimeout(() => window.location.reload(), 700);
+    } catch (error) {
+        showToast(error.message || 'Category save failed.', 'error');
+        submitButton.disabled = false;
+        submitButton.textContent = id ? 'Update Category' : 'Add Category';
+    }
+}
+
+async function deleteCategory(id) {
+    if (!confirm('Delete this category? This cannot be undone.')) return;
+    try {
+        const response = await fetch(`${ADMIN_URL}/video-categories/${id}`, {
+            method: 'DELETE',
+            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': CSRF_TOKEN },
+        });
+        const data = await response.json();
+        if (!response.ok || !data.success) {
+            throw new Error(data.message || 'Category could not be deleted.');
+        }
+        showToast('Category deleted successfully.');
+        setTimeout(() => window.location.reload(), 700);
+    } catch (error) {
+        showToast(error.message || 'Category delete failed.', 'error');
+    }
+}
+
+function resetAdForm() {
+    const form = document.getElementById('adForm');
+    if (form) form.reset();
+    document.getElementById('adModalTitle').textContent = 'Create Ad';
+    document.getElementById('adSubmitBtn').textContent = 'Create Ad';
+}
+
+function openAddAdModal() {
+    resetAdForm();
+    openModal('adModal');
+}
+
+async function saveAd() {
+    const submitButton = document.getElementById('adSubmitBtn');
+    const startDate = document.getElementById('ad_start_date').value;
+    if (!startDate) {
+        showToast('Start date is required.', 'error');
+        return;
+    }
+
+    const payload = new FormData();
+    payload.append('title', document.getElementById('ad_title').value.trim());
+    payload.append('description', document.getElementById('ad_description').value.trim());
+    payload.append('type', document.getElementById('ad_type').value);
+    payload.append('budget', document.getElementById('ad_budget').value.trim());
+    payload.append('link_url', document.getElementById('ad_link_url').value.trim());
+    payload.append('start_date', startDate);
+    const endDate = document.getElementById('ad_end_date').value;
+    if (endDate) payload.append('end_date', endDate);
+    const imageFile = document.getElementById('ad_image_file').files[0];
+    if (imageFile) payload.append('image_file', imageFile);
+
+    submitButton.disabled = true;
+    submitButton.textContent = 'Creating...';
+    try {
+        const response = await fetch(`${ADMIN_URL}/advertisements`, {
+            method: 'POST',
+            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': CSRF_TOKEN },
+            body: payload,
+        });
+        const data = await response.json();
+        if (!response.ok || !data.success) {
+            const errors = data.errors ? Object.values(data.errors).flat().join(', ') : data.message;
+            throw new Error(errors || 'Ad could not be created.');
+        }
+        closeModal('adModal');
+        showToast('Ad created successfully.');
+        setTimeout(() => window.location.reload(), 700);
+    } catch (error) {
+        showToast(error.message || 'Ad creation failed.', 'error');
+        submitButton.disabled = false;
+        submitButton.textContent = 'Create Ad';
+    }
+}
+
+function approveAd(id) {
+    if (!confirm('Approve this ad and make it active?')) return;
+    fetch(`${ADMIN_URL}/advertisements/${id}/approve`, {
+        method: 'POST',
+        headers: getHeaders(),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast('Ad approved successfully!');
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showToast(data.message || 'Error approving ad', 'error');
+        }
+    })
+    .catch(error => showToast('Error: ' + error.message, 'error'));
+}
+
+function deleteAd(id) {
+    if (!confirm('Delete this ad? This cannot be undone.')) return;
+    fetch(`${ADMIN_URL}/advertisements/${id}`, {
+        method: 'DELETE',
+        headers: getHeaders(),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast('Ad deleted successfully!');
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showToast(data.message || 'Error deleting ad', 'error');
+        }
+    })
+    .catch(error => showToast('Error: ' + error.message, 'error'));
+}
 function openAddGestationModal() { alert('Add Gestation functionality coming soon!'); }
 function openAddNotificationModal() { alert('Send Notification functionality coming soon!'); }
 function openComposeMessageModal() { alert('Compose Message functionality coming soon!'); }

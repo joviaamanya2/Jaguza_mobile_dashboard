@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Doctor;
 use App\Models\SicknessReport;
 use App\Models\Video;
+use App\Models\VideoCategory;
 use App\Models\Advertisement;
 use App\Models\WeatherUpdate;
 use App\Models\DecisionSupport;
@@ -33,6 +34,19 @@ class DashboardController extends Controller
         $recentReports = $this->getRecentReports();
         $livestockByType = $this->getLivestockByType();
         $recentVideos = $this->getRecentVideos();
+        $defaultVideoCategories = [
+            ['name' => 'Cattle', 'slug' => 'cattle'],
+            ['name' => 'Poultry', 'slug' => 'poultry'],
+            ['name' => 'Pigs', 'slug' => 'pigs'],
+            ['name' => 'Goats', 'slug' => 'goats'],
+        ];
+        foreach ($defaultVideoCategories as $position => $category) {
+            VideoCategory::firstOrCreate(
+                ['slug' => $category['slug']],
+                ['name' => $category['name'], 'order' => $position, 'is_active' => true]
+            );
+        }
+        $videoCategories = VideoCategory::active()->orderBy('order')->orderBy('name')->get();
         $activeAds = $this->getActiveAds();
         $weatherUpdates = $this->getWeatherUpdates();
         $decisionSupport = $this->getDecisionSupport();
@@ -103,6 +117,7 @@ class DashboardController extends Controller
             'recentReports',
             'livestockByType',
             'recentVideos',
+            'videoCategories',
             'activeAds',
             'weatherUpdates',
             'decisionSupport',
@@ -224,14 +239,13 @@ class DashboardController extends Controller
 
     private function getActiveAds()
     {
-        return Advertisement::where('status', 'active')
-            ->where('start_date', '<=', now())
-            ->where(function($q) {
-                $q->where('end_date', '>=', now())
-                  ->orWhereNull('end_date');
-            })
+        // The ads management page needs to show pending submissions (from the
+        // app's "Advertise with Jaguza" form) too, not just already-approved
+        // ones, so admins have something to act on.
+        return Advertisement::with('creator')
+            ->orderByRaw("FIELD(status, 'pending', 'active', 'draft', 'expired')")
             ->orderBy('created_at', 'desc')
-            ->limit(4)
+            ->limit(20)
             ->get();
     }
 

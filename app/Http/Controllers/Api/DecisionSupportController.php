@@ -130,6 +130,18 @@ class DecisionSupportController extends Controller
         return response()->json(['success' => true, 'data' => collect($animals)->map(fn ($animal) => ['name' => ucfirst($animal === 'pig' ? 'pigs' : $animal), 'category' => $animal, 'image_url' => null, 'resource_count' => DecisionSupport::published()->where('category', $animal)->count()])->values()]);
     }
 
+    public function categories()
+    {
+        return response()->json([
+            'success' => true,
+            'data' => DecisionSupport::published()
+                ->select('category')
+                ->distinct()
+                ->orderBy('category')
+                ->pluck('category'),
+        ]);
+    }
+
     public function stats()
     {
         return response()->json(['success' => true, 'data' => ['total' => DecisionSupport::published()->count(), 'featured' => DecisionSupport::published()->featured()->count(), 'categories' => DecisionSupport::published()->distinct('category')->count('category')]]);

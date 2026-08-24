@@ -62,7 +62,8 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'email' => 'required|email',
+            // The mobile app accepts either an email address or phone number.
+            'email' => 'required|string',
             'password' => 'required',
         ]);
 
@@ -73,15 +74,18 @@ class AuthController extends Controller
             ], 422);
         }
 
-        if (!Auth::attempt($request->only('email', 'password'))) {
+        $identifier = trim((string) $request->input('email'));
+        $user = User::where('email', $identifier)
+            ->orWhere('phone_number', $identifier)
+            ->first();
+
+        if (!$user || !Hash::check((string) $request->input('password'), $user->password)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Invalid login credentials'
             ], 401);
         }
 
-        $user = User::where('email', $request->email)->firstOrFail();
-        
         // Log activity
         UserActivityLog::log($user->id, 'login', 'auth');
 

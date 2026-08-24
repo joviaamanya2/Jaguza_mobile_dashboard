@@ -14,8 +14,11 @@
             <thead>
                 <tr>
                     <th>#</th>
-                                        <th>Name,type,breed,age,farm id</th>
-
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Breed</th>
+                    <th>Age</th>
+                    <th>Farm ID</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -23,7 +26,11 @@
                 @forelse($animals as $item)
                 <tr>
                     <td>{{ $loop->iteration }}</td>
-                                        <td>{{ $item->name,type,breed,age,farm_id ?? 'N/A' }}</td>
+                    <td>{{ $item->name ?? 'N/A' }}</td>
+                    <td>{{ $item->type ?? 'N/A' }}</td>
+                    <td>{{ $item->breed ?? 'N/A' }}</td>
+                    <td>{{ $item->age ?? 'N/A' }}</td>
+                    <td>{{ $item->farm_id ?? 'N/A' }}</td>
 
                     <td>
                         <button class="btn btn-outline" style="padding:4px 10px;font-size:11px;" onclick="editAnimal($item->id)">

@@ -143,6 +143,8 @@
     @include('dashboard.modals.report')
     @include('dashboard.modals.farm')
     @include('dashboard.modals.video')
+    @include('dashboard.modals.video-category')
+    @include('dashboard.modals.advertisement')
 
     <!-- ===== SCRIPTS ===== -->
     <script>

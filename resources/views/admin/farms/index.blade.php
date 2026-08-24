@@ -14,8 +14,10 @@
             <thead>
                 <tr>
                     <th>#</th>
-                                        <th>Name,location,owner id,size</th>
-
+                    <th>Name</th>
+                    <th>Location</th>
+                    <th>Owner</th>
+                    <th>Size</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -23,7 +25,10 @@
                 @forelse($farms as $item)
                 <tr>
                     <td>{{ $loop->iteration }}</td>
-                                        <td>{{ $item->name,location,owner_id,size ?? 'N/A' }}</td>
+                    <td>{{ $item->name ?? 'N/A' }}</td>
+                    <td>{{ $item->location ?? 'N/A' }}</td>
+                    <td>{{ $item->owner_name ?? 'N/A' }}</td>
+                    <td>{{ $item->size ?? 'N/A' }}</td>
 
                     <td>
                         <button class="btn btn-outline" style="padding:4px 10px;font-size:11px;" onclick="editFarm($item->id)">

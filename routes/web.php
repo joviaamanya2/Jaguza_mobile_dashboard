@@ -82,6 +82,11 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::put('/videos/{id}', [\App\Http\Controllers\Api\VideoController::class, 'update']);
         Route::delete('/videos/{id}', [\App\Http\Controllers\Api\VideoController::class, 'destroy']);
 
+        // Video Categories
+        Route::post('/video-categories', [\App\Http\Controllers\Api\VideoController::class, 'storeCategory']);
+        Route::put('/video-categories/{id}', [\App\Http\Controllers\Api\VideoController::class, 'updateCategory']);
+        Route::delete('/video-categories/{id}', [\App\Http\Controllers\Api\VideoController::class, 'destroyCategory']);
+
         // Advertisements
         Route::post('/advertisements', [\App\Http\Controllers\Api\AdvertisementController::class, 'store']);
         Route::put('/advertisements/{id}', [\App\Http\Controllers\Api\AdvertisementController::class, 'update']);

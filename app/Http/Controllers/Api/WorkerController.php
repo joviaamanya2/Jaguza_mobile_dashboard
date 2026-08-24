@@ -28,7 +28,16 @@ class WorkerController extends Controller
 
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        $data = $request->all();
+
+        // Convert empty strings to null for optional fields
+        foreach (['email', 'date_joined'] as $field) {
+            if (isset($data[$field]) && is_string($data[$field]) && trim($data[$field]) === '') {
+                $data[$field] = null;
+            }
+        }
+
+        $validator = Validator::make($data, [
             'farm_id' => 'required|exists:farms,id',
             'name' => 'required|string|max:255',
             'role' => 'required|string|max:255',
@@ -46,10 +55,11 @@ class WorkerController extends Controller
         }
 
         try {
-            $farm = Farm::findOrFail($request->farm_id);
+            $farm = Farm::findOrFail($data['farm_id']);
             
-            // Check if user is authorized to add worker to this farm
-            if (auth()->user()->role !== 'admin' && $farm->user_id !== auth()->id()) {
+            // Check if user is authorized to add worker to this farm safely
+            $user = auth()->user();
+            if ($user && isset($user->role) && $user->role !== 'admin' && $farm->user_id && $farm->user_id !== $user->id) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Unauthorized access'
@@ -57,18 +67,19 @@ class WorkerController extends Controller
             }
 
             $worker = Worker::create([
-                'farm_id' => $request->farm_id,
-                'name' => $request->name,
-                'role' => $request->role,
-                'phone' => $request->phone,
-                'email' => $request->email,
-                'date_joined' => $request->date_joined ?? now(),
-                'is_active' => $request->is_active ?? true,
+                'farm_id' => $data['farm_id'],
+                'name' => trim($data['name']),
+                'role' => trim($data['role']),
+                'phone' => trim($data['phone']),
+                'email' => $data['email'] ?? null,
+                'date_joined' => $data['date_joined'] ?? now(),
+                'is_active' => $data['is_active'] ?? true,
             ]);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Worker created successfully',
+                'id' => $worker->id,
                 'data' => $worker
             ], 201);
 

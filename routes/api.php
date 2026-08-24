@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\FarmController;
 use App\Http\Controllers\Api\WorkerController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\DoctorController;
+use App\Http\Controllers\Api\ExtensionWorkerController;
 use App\Http\Controllers\Api\DiseaseController;
 use App\Http\Controllers\Api\VideoController;
 use App\Http\Controllers\Api\AdvertisementController;
@@ -15,6 +16,9 @@ use App\Http\Controllers\Api\WeatherController;
 use App\Http\Controllers\Api\SettingsController;
 use App\Http\Controllers\Api\LanguageController;
 use App\Http\Controllers\Api\DecisionSupportController;
+use App\Http\Controllers\Api\MarketplaceController;
+use App\Http\Controllers\Api\GestationController;
+use App\Http\Controllers\Api\VaccinationController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\UserActivityController;
 use Illuminate\Support\Facades\Route;
@@ -38,6 +42,7 @@ Route::prefix('decision-support')->name('api.decision-support.')->group(function
     Route::get('resources/featured', [DecisionSupportController::class, 'featured'])->name('featured');
     Route::get('resources/{id}', [DecisionSupportController::class, 'show'])->name('show');
     Route::get('resources/{id}/related', [DecisionSupportController::class, 'related'])->name('related');
+    Route::get('categories', [DecisionSupportController::class, 'categories'])->name('categories');
     Route::get('category/{category}', [DecisionSupportController::class, 'byCategory'])->name('category');
     Route::get('topics', [DecisionSupportController::class, 'topics'])->name('topics');
     Route::get('animals', [DecisionSupportController::class, 'animals'])->name('animals');
@@ -71,12 +76,12 @@ Route::middleware('auth:sanctum')->group(function () {
     
     // ========== DOCTORS ==========
     Route::get('/doctors', [DoctorController::class, 'index']);
+    Route::get('/doctors/stats', [DoctorController::class, 'stats']);
     Route::post('/doctors', [DoctorController::class, 'store']);
     Route::get('/doctors/{id}', [DoctorController::class, 'show']);
     Route::put('/doctors/{id}', [DoctorController::class, 'update']);
     Route::delete('/doctors/{id}', [DoctorController::class, 'destroy']);
     Route::post('/doctors/{id}/availability', [DoctorController::class, 'updateAvailability']);
-    Route::get('/doctors/stats', [DoctorController::class, 'stats']);
     
     // ========== FARMS ==========
     Route::get('/farms', [FarmController::class, 'index']);
@@ -86,6 +91,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/farms/{id}', [FarmController::class, 'destroy']);
     
     // ========== WORKERS ==========
+    Route::get('/extension-workers', [ExtensionWorkerController::class, 'index']);
+    Route::post('/extension-workers', [ExtensionWorkerController::class, 'store']);
+    Route::get('/extension-workers/{id}', [ExtensionWorkerController::class, 'show']);
+    Route::put('/extension-workers/{id}', [ExtensionWorkerController::class, 'update']);
+    Route::delete('/extension-workers/{id}', [ExtensionWorkerController::class, 'destroy']);
+    Route::post('/extension-workers/{id}/availability', [ExtensionWorkerController::class, 'updateAvailability']);
+
+    // Farm workers
     Route::get('/workers', [WorkerController::class, 'index']);
     Route::post('/workers', [WorkerController::class, 'store']);
     Route::get('/workers/{id}', [WorkerController::class, 'show']);
@@ -104,14 +117,16 @@ Route::middleware('auth:sanctum')->group(function () {
     
     // ========== REPORTS ==========
     Route::get('/reports', [ReportController::class, 'index']);
+    Route::get('/reports/stats', [ReportController::class, 'stats']);
     Route::post('/reports', [ReportController::class, 'store']);
     Route::get('/reports/{id}', [ReportController::class, 'show']);
     Route::put('/reports/{id}', [ReportController::class, 'update']);
     Route::delete('/reports/{id}', [ReportController::class, 'destroy']);
     Route::post('/reports/{id}/resolve', [ReportController::class, 'resolve']);
-    Route::get('/reports/stats', [ReportController::class, 'stats']);
+    Route::post('/reports/{id}/assign-doctor', [ReportController::class, 'assignDoctor']);
     
     // ========== DISEASES ==========
+    Route::post('/diagnosis', [DiseaseController::class, 'diagnose']);
     Route::get('/diseases', [DiseaseController::class, 'index']);
     Route::post('/diseases', [DiseaseController::class, 'store']);
     Route::get('/diseases/{id}', [DiseaseController::class, 'show']);
@@ -128,13 +143,32 @@ Route::middleware('auth:sanctum')->group(function () {
     });
     
     // ========== VIDEOS ==========
+    Route::get('/videos/categories', [VideoController::class, 'categories']);
     Route::get('/videos', [VideoController::class, 'index']);
     Route::post('/videos', [VideoController::class, 'store']);
     Route::get('/videos/{id}', [VideoController::class, 'show']);
     Route::put('/videos/{id}', [VideoController::class, 'update']);
     Route::delete('/videos/{id}', [VideoController::class, 'destroy']);
-    Route::get('/videos/categories', [VideoController::class, 'categories']);
     Route::post('/videos/{id}/view', [VideoController::class, 'incrementViews']);
+
+    // ========== MARKETPLACE ==========
+    Route::get('/marketplace', [MarketplaceController::class, 'index']);
+    Route::post('/marketplace', [MarketplaceController::class, 'store']);
+    Route::get('/marketplace/{id}', [MarketplaceController::class, 'show']);
+    Route::put('/marketplace/{id}', [MarketplaceController::class, 'update']);
+    Route::delete('/marketplace/{id}', [MarketplaceController::class, 'destroy']);
+
+    // ========== FARM RECORDS ==========
+    Route::get('/gestation', [GestationController::class, 'index']);
+    Route::post('/gestation', [GestationController::class, 'store']);
+    Route::get('/gestation/{id}', [GestationController::class, 'show']);
+    Route::put('/gestation/{id}', [GestationController::class, 'update']);
+    Route::delete('/gestation/{id}', [GestationController::class, 'destroy']);
+    Route::get('/vaccinations', [VaccinationController::class, 'index']);
+    Route::post('/vaccinations', [VaccinationController::class, 'store']);
+    Route::get('/vaccinations/{id}', [VaccinationController::class, 'show']);
+    Route::put('/vaccinations/{id}', [VaccinationController::class, 'update']);
+    Route::delete('/vaccinations/{id}', [VaccinationController::class, 'destroy']);
     
     // ========== ADVERTISEMENTS ==========
     Route::get('/advertisements', [AdvertisementController::class, 'index']);
@@ -159,12 +193,14 @@ Route::middleware('auth:sanctum')->group(function () {
     
     // ========== SETTINGS ==========
     Route::get('/settings', [SettingsController::class, 'index']);
+    Route::get('/settings/public', [SettingsController::class, 'public']);
     Route::post('/settings', [SettingsController::class, 'store']);
     Route::get('/settings/{key}', [SettingsController::class, 'show']);
     Route::put('/settings/{key}', [SettingsController::class, 'update']);
     Route::delete('/settings/{key}', [SettingsController::class, 'destroy']);
     
     // ========== LANGUAGES ==========
+    Route::get('/languages', [LanguageController::class, 'index']);
     Route::get('/languages/active', [LanguageController::class, 'active']);
     Route::post('/languages/{id}/default', [LanguageController::class, 'setDefault']);
     

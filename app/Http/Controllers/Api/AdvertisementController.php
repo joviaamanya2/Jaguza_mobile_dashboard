@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Advertisement;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class AdvertisementController extends Controller
@@ -23,17 +24,33 @@ class AdvertisementController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'type' => 'required|in:' . implode(',', Advertisement::TYPES),
+            'link_url' => 'nullable|url|max:500',
             'budget' => 'nullable|numeric|min:0',
             'start_date' => 'required|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
+            'image_file' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:4096',
+            'video_file' => 'nullable|file|mimes:mp4,mov,webm,avi|max:51200',
         ]);
 
         if ($validator->fails()) {
             return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
         }
 
+        $data = $request->only(['title', 'description', 'type', 'link_url', 'budget', 'start_date', 'end_date']);
+
+        if ($request->hasFile('image_file')) {
+            $data['image_url'] = Storage::disk('public')->url(
+                $request->file('image_file')->store('advertisements', 'public')
+            );
+        }
+        if ($request->hasFile('video_file')) {
+            $data['video_url'] = Storage::disk('public')->url(
+                $request->file('video_file')->store('advertisements', 'public')
+            );
+        }
+
         $ad = Advertisement::create(array_merge(
-            $request->all(),
+            $data,
             [
                 'created_by' => $request->user()->id ?? 1,
                 'status' => 'pending',
@@ -44,7 +61,7 @@ class AdvertisementController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Ad created successfully',
+            'message' => 'Ad submitted successfully and is pending approval',
             'data' => $ad
         ], 201);
     }

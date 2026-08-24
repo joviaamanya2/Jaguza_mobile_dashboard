@@ -9,26 +9,31 @@ class Animal extends Model
 {
     use HasFactory;
 
-    // ✅ ADD THIS - The TYPES constant
-    const TYPES = [
+    // Model Constants
+    public const TYPES = [
         'cattle',
+        'cow',
         'goat',
+        'goats',
         'sheep',
         'pig',
+        'pigs',
         'poultry',
+        'chicken',
         'rabbit',
+        'rabbits',
         'horse',
+        'horses',
+        'fish',
         'other'
     ];
 
-    // ✅ ADD THIS
-    const GENDERS = [
+    public const GENDERS = [
         'male',
         'female'
     ];
 
-    // ✅ ADD THIS
-    const HEALTH_STATUSES = [
+    public const HEALTH_STATUSES = [
         'healthy',
         'sick',
         'treatment',

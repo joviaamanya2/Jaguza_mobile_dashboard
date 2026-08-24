@@ -12,6 +12,7 @@ class SicknessReport extends Model
     protected $fillable = [
         'report_id',
         'user_id',
+        'doctor_id',
         'affected_animal_type',
         'affected_animal_count',
         'symptom_primary',
@@ -37,5 +38,10 @@ class SicknessReport extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function doctor()
+    {
+        return $this->belongsTo(Doctor::class, 'doctor_id');
     }
 }

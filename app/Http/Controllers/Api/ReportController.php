@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\SicknessReport;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class ReportController extends Controller
@@ -20,6 +21,14 @@ class ReportController extends Controller
     public function store(Request $request)
     {
         $data = $this->normalize($request);
+
+        $fileValidator = Validator::make($request->all(), $this->fileRules());
+        if ($fileValidator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $fileValidator->errors(),
+            ], 422);
+        }
 
         $validator = Validator::make($data, $this->rules(), $this->messages());
 
@@ -38,7 +47,7 @@ class ReportController extends Controller
             'severity_level' => $data['severity_level'] ?? 'medium',
             'status' => 'open',
             'notes' => $data['notes'] ?? null,
-            'attachments' => $data['attachments'] ?? [],
+            'attachments' => $this->storeAttachments($request, $data['attachments'] ?? []),
         ]);
 
         return response()->json([
@@ -66,6 +75,14 @@ class ReportController extends Controller
 
         $data = $this->normalize($request);
 
+        $fileValidator = Validator::make($request->all(), $this->fileRules());
+        if ($fileValidator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $fileValidator->errors(),
+            ], 422);
+        }
+
         $validator = Validator::make($data, $this->rules(true), $this->messages());
 
         if ($validator->fails()) {
@@ -78,6 +95,12 @@ class ReportController extends Controller
             'symptom_primary', 'symptom_other', 'symptom_duration',
             'severity_level', 'status', 'notes', 'attachments',
         ])));
+        if ($request->hasFile('images') || $request->hasFile('videos') || $request->hasFile('audio')) {
+            $report->attachments = $this->storeAttachments(
+                $request,
+                $report->attachments ?? []
+            );
+        }
         $report->save();
 
         return response()->json([
@@ -111,6 +134,26 @@ class ReportController extends Controller
             'success' => true,
             'message' => 'Report marked as resolved',
             'data' => $report->load('user')
+        ]);
+    }
+
+    public function assignDoctor(Request $request, $id)
+    {
+        $report = SicknessReport::find($id);
+        if (!$report) {
+            return response()->json(['success' => false, 'message' => 'Report not found'], 404);
+        }
+
+        $validated = $request->validate([
+            'doctor_id' => 'required|exists:doctors,id',
+        ]);
+
+        $report->update(['doctor_id' => $validated['doctor_id']]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Doctor assigned successfully',
+            'data' => $report->load('user'),
         ]);
     }
 
@@ -153,6 +196,12 @@ class ReportController extends Controller
 
         if (isset($data['severity_level']) && is_string($data['severity_level'])) {
             $data['severity_level'] = strtolower($data['severity_level']);
+
+            // The mobile UI calls this level "Moderate", while the existing
+            // database enum uses "medium". Store the canonical DB value.
+            if ($data['severity_level'] === 'moderate') {
+                $data['severity_level'] = 'medium';
+            }
         }
 
         if (isset($data['attachments']) && is_string($data['attachments'])) {
@@ -182,6 +231,42 @@ class ReportController extends Controller
             'attachments' => 'nullable|array',
             'attachments.*' => 'string',
         ];
+    }
+
+    /**
+     * Files are uploaded with the report request and exposed as URLs in the
+     * JSON attachments column. The dashboard and mobile clients can therefore
+     * render the same media without knowing the storage path.
+     */
+    private function fileRules(): array
+    {
+        return [
+            'images' => 'nullable|array|max:2',
+            'images.*' => 'file|image|mimes:jpg,jpeg,png,webp|max:10240',
+            'videos' => 'nullable|array|max:1',
+            'videos.*' => 'file|mimes:mp4,mov,avi,webm,m4v|max:51200',
+            'audio' => 'nullable|file|mimes:mp3,wav,m4a,aac,ogg,oga|max:20480',
+        ];
+    }
+
+    private function storeAttachments(Request $request, array $existing = []): array
+    {
+        $attachments = array_values(array_filter($existing, 'is_string'));
+
+        foreach ($request->file('images', []) as $file) {
+            $attachments[] = Storage::disk('public')->url($file->store('sickness-reports/images', 'public'));
+        }
+
+        foreach ($request->file('videos', []) as $file) {
+            $attachments[] = Storage::disk('public')->url($file->store('sickness-reports/videos', 'public'));
+        }
+
+        if ($request->hasFile('audio')) {
+            $file = $request->file('audio');
+            $attachments[] = Storage::disk('public')->url($file->store('sickness-reports/audio', 'public'));
+        }
+
+        return $attachments;
     }
 
     private function messages(): array
