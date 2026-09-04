@@ -440,10 +440,8 @@
     .disease-action-btn:hover { transform:translateY(-1px); box-shadow:0 3px 8px rgba(0,0,0,.12); }
     @media (max-width: 700px) { .disease-page-heading { align-items:flex-start; flex-direction:column; } .disease-page-heading .btn { width:100%; } }
 
-    .decision-page-container { max-width: 1500px; margin: 0 auto; }
-    .decision-page-header { display:flex; align-items:center; justify-content:space-between; gap:24px; margin-bottom:24px; }
-    .decision-page-header h1 { margin:0; font-size:26px; color:#1a1a2e; }
-    .decision-page-header p { margin:6px 0 0; color:#6a7a8a; font-size:13px; }
+    .decision-page-heading { display:flex; align-items:center; justify-content:space-between; gap:20px; }
+    .decision-page-heading p { margin:6px 0 0; color:#7b8794; font-size:13px; }
     .decision-filter-card { padding:18px 20px; margin-bottom:24px; }
     .decision-filters { display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap; }
     .decision-filter-field { flex:1 1 190px; min-width:150px; }
@@ -453,8 +451,8 @@
     .decision-filter-actions { display:flex; gap:10px; flex:0 0 auto; }
     .decision-filter-actions .btn { min-height:39px; }
     @media (max-width: 700px) {
-      .decision-page-header { align-items:flex-start; flex-direction:column; }
-      .decision-page-header .btn { width:100%; }
+      .decision-page-heading { align-items:flex-start; flex-direction:column; }
+      .decision-page-heading .btn { width:100%; }
       .decision-filter-field, .decision-filter-actions { width:100%; flex-basis:100%; }
       .decision-filter-actions .btn { flex:1; }
     }

@@ -29,6 +29,10 @@ const userData = @json($userData);
 const marketData = @json($marketData);
 const livestockLabels = @json($livestockLabels);
 const livestockValues = @json($livestockValues);
+const analyticsMonths = @json($analyticsMonths ?? []);
+const analyticsUserData = @json($analyticsUserData ?? []);
+const diseaseLabels = @json($diseaseLabels ?? []);
+const diseaseCounts = @json($diseaseCounts ?? []);
 
 function renderDashboardCharts() {
     new Chart(document.getElementById('sickChart'), {
@@ -116,45 +120,47 @@ function renderDashboardCharts() {
 }
 
 function renderAnalyticsCharts() {
-    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    new Chart(document.getElementById('userGrowthChart'), { 
-        type:'line', 
-        data:{ 
-            labels:months, 
-            datasets:[{ 
-                label:'Users', 
-                data:[800,920,1040,1200,1380,1520,1700,1840,1980,2150,2300,2481], 
-                borderColor:'#2e7d32', 
-                backgroundColor:'rgba(46,125,50,0.08)', 
-                borderWidth:2.5, 
-                tension:0.4, 
-                fill:true 
-            }] 
-        }, 
-        options:{ 
-            responsive:true, 
+    new Chart(document.getElementById('userGrowthChart'), {
+        type:'line',
+        data:{
+            labels: analyticsMonths,
+            datasets:[{
+                label:'Users',
+                data: analyticsUserData,
+                borderColor:'#2e7d32',
+                backgroundColor:'rgba(46,125,50,0.08)',
+                borderWidth:2.5,
+                tension:0.4,
+                fill:true
+            }]
+        },
+        options:{
+            responsive:true,
             maintainAspectRatio:true,
-            plugins:{legend:{display:false}}, 
-            scales:{y:{beginAtZero:false}} 
-        } 
+            plugins:{legend:{display:false}},
+            scales:{y:{beginAtZero:true}}
+        }
     });
-    
-    new Chart(document.getElementById('diseaseChart'), { 
-        type:'pie', 
-        data:{ 
-            labels:['ECF','FMD','Newcastle','Brucellosis','ASF','Other'], 
-            datasets:[{ 
-                data:[82,64,58,41,28,74], 
-                backgroundColor:['#ef5350','#ffa726','#42a5f5','#ab47bc','#66bb6a','#78909c'], 
-                borderWidth:0 
-            }] 
-        }, 
-        options:{ 
-            responsive:true, 
-            maintainAspectRatio:true,
-            plugins:{legend:{position:'right'}} 
-        } 
-    });
+
+    if (diseaseLabels.length > 0) {
+        const diseaseColors = ['#ef5350','#ffa726','#42a5f5','#ab47bc','#66bb6a','#78909c'];
+        new Chart(document.getElementById('diseaseChart'), {
+            type:'pie',
+            data:{
+                labels: diseaseLabels,
+                datasets:[{
+                    data: diseaseCounts,
+                    backgroundColor: diseaseColors.slice(0, diseaseLabels.length),
+                    borderWidth:0
+                }]
+            },
+            options:{
+                responsive:true,
+                maintainAspectRatio:true,
+                plugins:{legend:{position:'right'}}
+            }
+        });
+    }
 }
 
 // ============================================

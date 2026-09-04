@@ -1,14 +1,14 @@
 {{-- resources/views/admin/decision-support/index.blade.php --}}
-<div class="page {{ ($initialPage ?? 'dashboard') === 'decision' ? 'active' : '' }}" id="page-decision">
-<div class="container-fluid decision-page-container">
-    <div class="decision-page-header">
-        <div>
-            <h1>Decision Support Resources</h1>
-            <p>Manage practical livestock guidance for farmers.</p>
-        </div>
-        <button type="button" class="btn btn-primary" onclick="openModal('decisionResourceModal')">
-            <i class="fas fa-plus"></i> Add New Resource
-        </button>
+  <!-- ===== DECISION SUPPORT ===== -->
+  <div class="page {{ ($initialPage ?? 'dashboard') === 'decision' ? 'active' : '' }}" id="page-decision">
+    <div class="section-heading decision-page-heading">
+      <div>
+        <h2><i class="fas fa-lightbulb" style="color:#2e7d32;margin-right:8px;"></i>Decision Support Resources</h2>
+        <p>Manage practical livestock guidance for farmers.</p>
+      </div>
+      <button type="button" class="btn btn-primary" onclick="openModal('decisionResourceModal')">
+        <i class="fas fa-plus"></i> Add New Resource
+      </button>
     </div>
 
     <!-- Filters -->
@@ -130,7 +130,6 @@
             @endif
         </div>
     </div>
-</div>
-</div>
+  </div>
 
 @include('dashboard.modals.decision-support')

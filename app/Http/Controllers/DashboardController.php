@@ -81,6 +81,16 @@ class DashboardController extends Controller
         $sicknessGrowthPercent = $this->calculateGrowth(SicknessReport::class);
         $farmGrowthPercent = $this->calculateGrowth(Farm::class);
         $livestockGrowthPercent = $this->calculateGrowth(Animal::class);
+        $marketVolumeGrowthPercent = $this->calculateSumGrowth(MarketplaceListing::class, 'price');
+        $videoViewsGrowthPercent = $this->calculateSumGrowth(Video::class, 'views_count');
+
+        // Analytics page: 12-month user growth trend and top reported symptoms.
+        $analyticsUserGrowth = $this->getAnalyticsUserGrowth();
+        $analyticsMonths = $analyticsUserGrowth['months'];
+        $analyticsUserData = $analyticsUserGrowth['data'];
+        $diseaseCases = $this->getDiseaseCaseData();
+        $diseaseLabels = $diseaseCases->pluck('symptom_primary');
+        $diseaseCounts = $diseaseCases->pluck('count');
 
         // These values power the farm-page summary cards. Keep them separate
         // from the limited list of recently created farms shown in the table.
@@ -146,6 +156,12 @@ class DashboardController extends Controller
             'sicknessGrowthPercent',
             'farmGrowthPercent',
             'livestockGrowthPercent',
+            'marketVolumeGrowthPercent',
+            'videoViewsGrowthPercent',
+            'analyticsMonths',
+            'analyticsUserData',
+            'diseaseLabels',
+            'diseaseCounts',
             'totalFarms',
             'activeFarms',
             'totalAnimalsOnFarms',
@@ -177,6 +193,8 @@ class DashboardController extends Controller
             'total_videos' => Video::where('is_published', true)->count(),
             'active_ads' => Advertisement::where('status', 'active')->count(),
             'total_gestations' => GestationRecord::count(),
+            'total_market_volume' => MarketplaceListing::whereIn('status', ['active', 'sold'])->sum('price'),
+            'total_video_views' => Video::sum('views_count'),
         ];
     }
 
@@ -342,12 +360,62 @@ class DashboardController extends Controller
         $current = $model::whereMonth('created_at', now()->month)
             ->whereYear('created_at', now()->year)
             ->count();
-            
+
         $previous = $model::whereMonth('created_at', now()->subMonth()->month)
             ->whereYear('created_at', now()->subMonth()->year)
             ->count();
-            
+
         if ($previous == 0) return 0;
         return round((($current - $previous) / $previous) * 100, 1);
+    }
+
+    // Same idea as calculateGrowth() but compares a summed column (e.g. price,
+    // views_count) for rows created this month vs last month, instead of a
+    // row count. Used for the Analytics page's Market Volume / Video Views
+    // growth badges.
+    private function calculateSumGrowth($model, string $column)
+    {
+        $current = $model::whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)
+            ->sum($column);
+
+        $previous = $model::whereMonth('created_at', now()->subMonth()->month)
+            ->whereYear('created_at', now()->subMonth()->year)
+            ->sum($column);
+
+        if ($previous == 0) return 0;
+        return round((($current - $previous) / $previous) * 100, 1);
+    }
+
+    // 12 months of real new-user counts for the Analytics page's user growth
+    // line chart (the main dashboard's userChart only covers the last 7).
+    private function getAnalyticsUserGrowth()
+    {
+        $months = [];
+        $data = [];
+
+        for ($i = 11; $i >= 0; $i--) {
+            $month = now()->subMonths($i);
+            $months[] = $month->format('M');
+            $data[] = User::whereMonth('created_at', $month->month)
+                ->whereYear('created_at', $month->year)
+                ->count();
+        }
+
+        return ['months' => $months, 'data' => $data];
+    }
+
+    // Top reported symptoms across all sickness reports, for the Analytics
+    // page's "Disease Cases by Type" chart. There's no disease_id on
+    // SicknessReport, so the reported primary symptom is the closest real
+    // grouping available.
+    private function getDiseaseCaseData()
+    {
+        return SicknessReport::select('symptom_primary', DB::raw('count(*) as count'))
+            ->whereNotNull('symptom_primary')
+            ->groupBy('symptom_primary')
+            ->orderByDesc('count')
+            ->limit(6)
+            ->get();
     }
 }
