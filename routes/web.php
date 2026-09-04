@@ -41,6 +41,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::post('/users/{id}/toggle-status', [\App\Http\Controllers\Api\UserController::class, 'toggleStatus']);
         
         // Animals
+        Route::get('/animals/{id}', [\App\Http\Controllers\Admin\AdminAnimalController::class, 'show']);
         Route::post('/animals', [\App\Http\Controllers\Admin\AdminAnimalController::class, 'store']);
         Route::put('/animals/{id}', [\App\Http\Controllers\Admin\AdminAnimalController::class, 'update']);
         Route::delete('/animals/{id}', [\App\Http\Controllers\Admin\AdminAnimalController::class, 'destroy']);

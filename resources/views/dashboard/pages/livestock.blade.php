@@ -51,7 +51,7 @@
     </div>
   </div>
   <script>
-    function editLivestockAnimal(id) { openAddAnimalModal(); if (typeof showToast === 'function') showToast('Edit animal form opened.'); }
+    function editLivestockAnimal(id) { editAnimal(id); }
     function deleteLivestockAnimal(id) {
       if (!confirm('Delete this animal? This action cannot be undone.')) return;
       fetch(`/admin/animals/${id}`, { method:'DELETE', headers:{'X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content, 'Accept':'application/json'} }).then(() => window.location.reload());

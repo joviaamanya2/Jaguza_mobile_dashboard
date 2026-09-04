@@ -60,7 +60,7 @@ class AdminAnimalController extends Controller
 
     public function show($id)
     {
-        $animal = Animal::with(['farm', 'owner', 'sicknessReports', 'vaccinations'])->findOrFail($id);
+        $animal = Animal::with(['farm', 'owner'])->findOrFail($id);
         return response()->json([
             'success' => true,
             'data' => $animal

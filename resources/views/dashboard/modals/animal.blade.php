@@ -80,7 +80,7 @@
             </div>
             
             <div class="modal-footer">
-                <button type="submit" class="btn btn-primary">Save Animal</button>
+                <button type="submit" class="btn btn-primary" id="animalSubmitBtn">Save Animal</button>
                 <button type="button" class="btn btn-outline" onclick="closeModal('animalModal')">Cancel</button>
             </div>
         </form>

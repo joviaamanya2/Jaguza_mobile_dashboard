@@ -31,4 +31,16 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    /*
+    | Jaguza AI chat. Point this at any OpenAI-compatible chat-completions API
+    | (OpenAI, Groq, OpenRouter, Together, a local LLM, ...). Leave AI_API_KEY
+    | empty to run the built-in farming knowledge base instead.
+    */
+    'ai' => [
+        'key' => env('AI_API_KEY'),
+        'base_url' => env('AI_BASE_URL', 'https://api.openai.com/v1'),
+        'model' => env('AI_MODEL', 'gpt-4o-mini'),
+        'timeout' => env('AI_TIMEOUT', 30),
+    ],
+
 ];

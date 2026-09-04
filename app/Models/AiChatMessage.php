@@ -11,6 +11,9 @@ class AiChatMessage extends Model
 
     protected $fillable = [
         'user_id',
+        'sender',
+        'message',
+        'language',
         'user_message',
         'bot_response',
         'metadata',

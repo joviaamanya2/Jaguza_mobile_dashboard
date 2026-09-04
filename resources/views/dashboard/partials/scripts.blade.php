@@ -815,7 +815,108 @@ function saveUser() {
 // OTHER MODAL FUNCTIONS
 // ============================================
 
-function openAddAnimalModal() { openModal('animalModal'); }
+function resetAnimalForm() {
+    const form = document.getElementById('animalForm');
+    if (form) form.reset();
+    document.getElementById('animalId').value = '';
+    document.getElementById('animalModalTitle').textContent = 'Add New Animal';
+    document.getElementById('animalSubmitBtn').textContent = 'Save Animal';
+}
+
+function openAddAnimalModal() {
+    resetAnimalForm();
+    openModal('animalModal');
+}
+
+function editAnimal(id) {
+    showToast('Loading animal data...', 'info');
+
+    fetch(`${ADMIN_URL}/animals/${id}`, {
+        headers: getHeaders()
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const animal = data.data;
+
+            document.getElementById('animalId').value = animal.id;
+            document.getElementById('animal_identification').value = animal.identification_number || '';
+            document.getElementById('animal_name').value = animal.name || '';
+            document.getElementById('animal_type').value = animal.type || 'cattle';
+            document.getElementById('animal_breed').value = animal.breed || '';
+            document.getElementById('animal_gender').value = animal.gender || 'male';
+            document.getElementById('animal_age').value = animal.age || 0;
+            document.getElementById('animal_weight').value = animal.weight || '';
+            document.getElementById('animal_health').value = animal.health_status || 'healthy';
+            document.getElementById('animal_farm').value = animal.farm_id || '';
+
+            document.getElementById('animalModalTitle').textContent = 'Edit Animal';
+            document.getElementById('animalSubmitBtn').textContent = 'Update Animal';
+
+            openModal('animalModal');
+        } else {
+            showToast(data.message || 'Error loading animal', 'error');
+        }
+    })
+    .catch(error => {
+        showToast('Error loading animal: ' + error.message, 'error');
+    });
+}
+
+function saveAnimal() {
+    const id = document.getElementById('animalId').value;
+
+    const data = {
+        identification_number: document.getElementById('animal_identification').value,
+        name: document.getElementById('animal_name').value,
+        type: document.getElementById('animal_type').value,
+        breed: document.getElementById('animal_breed').value,
+        gender: document.getElementById('animal_gender').value,
+        age: parseInt(document.getElementById('animal_age').value) || 0,
+        weight: document.getElementById('animal_weight').value ? parseFloat(document.getElementById('animal_weight').value) : null,
+        health_status: document.getElementById('animal_health').value,
+        farm_id: document.getElementById('animal_farm').value,
+    };
+
+    const url = id ? `${ADMIN_URL}/animals/${id}` : `${ADMIN_URL}/animals`;
+    const method = id ? 'PUT' : 'POST';
+
+    const submitBtn = document.getElementById('animalSubmitBtn');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Saving...';
+
+    fetch(url, {
+        method: method,
+        headers: getHeaders(),
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        submitBtn.disabled = false;
+        submitBtn.textContent = id ? 'Update Animal' : 'Save Animal';
+
+        if (data.success) {
+            showToast(id ? 'Animal updated successfully!' : 'Animal added successfully!');
+            closeModal('animalModal');
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            let errors = '';
+            if (data.errors) {
+                Object.values(data.errors).forEach(error => {
+                    errors += error + '\n';
+                });
+                showToast(errors, 'error');
+            } else {
+                showToast(data.message || 'Error saving animal', 'error');
+            }
+        }
+    })
+    .catch(error => {
+        submitBtn.disabled = false;
+        submitBtn.textContent = id ? 'Update Animal' : 'Save Animal';
+        showToast('Network error: ' + error.message, 'error');
+    });
+}
 
 // ============================================
 // SICKNESS REPORT CRUD FUNCTIONS
