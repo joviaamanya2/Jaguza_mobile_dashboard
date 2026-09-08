@@ -1,8 +1,8 @@
   <!-- ===== VIDEOS ===== -->
   <div class="page {{ ($initialPage ?? 'dashboard') === 'videos' ? 'active' : '' }}" id="page-videos">
     <div class="section-heading">
-      <h2><i class="fas fa-play-circle" style="color:#2e7d32;margin-right:8px;"></i>Educational Videos</h2>
-      <button class="btn btn-primary" onclick="openAddVideoModal()">+ Upload Video</button>
+      <h2><i class="fas fa-play-circle" style="color:#2e7d32;margin-right:8px;"></i>Educational Media</h2>
+      <button class="btn btn-primary" onclick="openAddVideoModal()">+ Upload Media</button>
     </div>
 
     <div class="card" style="margin-bottom:20px;">
@@ -28,14 +28,23 @@
 
     <div class="video-grid">
       @forelse($recentVideos as $video)
+      @php($isImage = ($video->media_type ?? 'video') === 'image')
       <div class="video-card">
         <div class="video-thumb">
-          @if($video->thumbnail_url)<img src="{{ $video->thumbnail_url }}" alt="{{ $video->title }}">@else<i class="fas fa-video"></i>@endif
+          @if($isImage && $video->image_url)
+            <img src="{{ $video->image_url }}" alt="{{ $video->title }}">
+          @elseif($video->thumbnail_url)
+            <img src="{{ $video->thumbnail_url }}" alt="{{ $video->title }}">
+          @else
+            <i class="fas {{ $isImage ? 'fa-image' : 'fa-video' }}"></i>
+          @endif
+          @unless($isImage)
           <div class="play-btn" onclick="playVideo({{ $video->id }})"><i class="fas fa-play"></i></div>
+          @endunless
         </div>
         <div class="video-info">
           <h4>{{ $video->title }}</h4>
-          <p>{{ $video->duration ?? 'N/A' }} &bull; {{ number_format($video->views_count ?? 0) }} views &bull; {{ $video->created_at ? $video->created_at->format('M d') : 'N/A' }}</p>
+          <p>{{ $isImage ? 'Image' : ($video->duration ?? 'N/A') }} &bull; {{ number_format($video->views_count ?? 0) }} views &bull; {{ $video->created_at ? $video->created_at->format('M d') : 'N/A' }}</p>
         </div>
       </div>
       @empty

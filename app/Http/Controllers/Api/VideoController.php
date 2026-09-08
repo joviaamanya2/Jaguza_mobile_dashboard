@@ -25,8 +25,11 @@ class VideoController extends Controller
         $validator = Validator::make($request->all(), [
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'video_url' => 'nullable|url|required_without:video_file',
+            'media_type' => 'nullable|in:video,image',
+            'video_url' => 'nullable|url|required_without_all:video_file,image_url,image_file',
             'video_file' => 'nullable|file|mimes:mp4,mov,webm,avi|max:51200',
+            'image_url' => 'nullable|url',
+            'image_file' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:8192',
             'category_id' => 'required|exists:video_categories,id',
             'thumbnail_url' => 'nullable|url',
             'thumbnail_file' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:4096',
@@ -41,12 +44,25 @@ class VideoController extends Controller
             return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
         }
 
+        $imageUrl = $request->input('image_url');
+        if ($request->hasFile('image_file')) {
+            $imageUrl = Storage::disk('public')->url(
+                $request->file('image_file')->store('videos/images', 'public')
+            );
+        }
+
         $videoUrl = $request->input('video_url');
         if ($request->hasFile('video_file')) {
             $videoUrl = Storage::disk('public')->url(
                 $request->file('video_file')->store('videos', 'public')
             );
         }
+
+        $mediaType = $request->input('media_type');
+        if (!in_array($mediaType, ['video', 'image'], true)) {
+            $mediaType = $videoUrl ? 'video' : ($imageUrl ? 'image' : 'video');
+        }
+
         $thumbnailUrl = $request->input('thumbnail_url');
         if ($request->hasFile('thumbnail_file')) {
             $thumbnailUrl = Storage::disk('public')->url(
@@ -61,7 +77,9 @@ class VideoController extends Controller
         $video = Video::create([
             'title' => $request->title,
             'description' => $request->description,
-            'video_url' => $videoUrl,
+            'media_type' => $mediaType,
+            'video_url' => $videoUrl ?? '',
+            'image_url' => $imageUrl,
             'thumbnail_url' => $thumbnailUrl,
             'category_id' => $request->category_id,
             'duration' => $request->duration,
@@ -98,7 +116,9 @@ class VideoController extends Controller
 
         $validator = Validator::make($request->all(), [
             'title' => 'required|string|max:255',
-            'video_url' => 'required|url',
+            'media_type' => 'nullable|in:video,image',
+            'video_url' => 'nullable|url',
+            'image_url' => 'nullable|url',
         ]);
 
         if ($validator->fails()) {

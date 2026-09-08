@@ -1057,14 +1057,26 @@ function resetVideoForm() {
     if (form) form.reset();
     document.getElementById('videoId').value = '';
     document.getElementById('video_published').checked = true;
-    document.getElementById('videoModalTitle').textContent = 'Upload Video';
-    document.getElementById('videoSubmitBtn').textContent = 'Upload Video';
+    document.getElementById('video_media_type').value = 'video';
+    document.getElementById('videoModalTitle').textContent = 'Upload Media';
+    document.getElementById('videoSubmitBtn').textContent = 'Upload Media';
     toggleNewCategoryInput();
+    toggleMediaTypeFields();
 }
 
 function openAddVideoModal() {
     resetVideoForm();
     openModal('videoModal');
+}
+
+function toggleMediaTypeFields() {
+    const type = document.getElementById('video_media_type').value;
+    document.querySelectorAll('#videoForm .media-type-video').forEach(el => {
+        el.style.display = type === 'video' ? '' : 'none';
+    });
+    document.querySelectorAll('#videoForm .media-type-image').forEach(el => {
+        el.style.display = type === 'image' ? '' : 'none';
+    });
 }
 
 function toggleNewCategoryInput() {
@@ -1114,9 +1126,17 @@ async function saveVideo() {
         showToast('Select an Explore category first.', 'error');
         return;
     }
+    const mediaType = document.getElementById('video_media_type').value;
     const videoFile = document.getElementById('video_file').files[0];
-    if (!videoFile && !document.getElementById('video_url').value.trim()) {
+    const imageFile = document.getElementById('video_image_file').files[0];
+    const videoUrl = document.getElementById('video_url').value.trim();
+    const imageUrl = document.getElementById('video_image_url').value.trim();
+    if (mediaType === 'video' && !videoFile && !videoUrl) {
         showToast('Select a video file or provide a video URL.', 'error');
+        return;
+    }
+    if (mediaType === 'image' && !imageFile && !imageUrl) {
+        showToast('Select an image file or provide an image URL.', 'error');
         return;
     }
 
@@ -1128,17 +1148,23 @@ async function saveVideo() {
         const payload = new FormData();
         payload.append('title', document.getElementById('video_title').value.trim());
         payload.append('description', document.getElementById('video_description').value.trim());
-        payload.append('video_url', document.getElementById('video_url').value.trim());
-        payload.append('thumbnail_url', document.getElementById('video_thumbnail').value.trim());
+        payload.append('media_type', mediaType);
         payload.append('category_id', categoryId);
         payload.append('duration', document.getElementById('video_duration').value.trim());
         payload.append('platform', document.getElementById('video_platform').value);
         payload.append('tags', document.getElementById('video_tags').value);
         payload.append('is_featured', document.getElementById('video_featured').checked ? '1' : '0');
         payload.append('is_published', document.getElementById('video_published').checked ? '1' : '0');
-        const thumbnailFile = document.getElementById('video_thumbnail_file').files[0];
-        if (videoFile) payload.append('video_file', videoFile);
-        if (thumbnailFile) payload.append('thumbnail_file', thumbnailFile);
+        if (mediaType === 'video') {
+            payload.append('video_url', videoUrl);
+            payload.append('thumbnail_url', document.getElementById('video_thumbnail').value.trim());
+            const thumbnailFile = document.getElementById('video_thumbnail_file').files[0];
+            if (videoFile) payload.append('video_file', videoFile);
+            if (thumbnailFile) payload.append('thumbnail_file', thumbnailFile);
+        } else {
+            payload.append('image_url', imageUrl);
+            if (imageFile) payload.append('image_file', imageFile);
+        }
 
         const response = await fetch(id ? `${ADMIN_URL}/videos/${id}` : `${ADMIN_URL}/videos`, {
             method: id ? 'PUT' : 'POST',
