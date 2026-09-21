@@ -13,11 +13,8 @@
       @forelse($dueGestations as $gestation)
       <div class="gestation-item">
         <div class="gestation-icon">
-          @if($gestation->animal->type == 'cattle') &#x1F404;
-          @elseif($gestation->animal->type == 'goat') &#x1F410;
-          @elseif($gestation->animal->type == 'sheep') &#x1F411;
-          @elseif($gestation->animal->type == 'pig') &#x1F416;
-          @else &#x1F43E;
+          @if($gestation->animal->type == 'cattle') <i class="fas fa-horse" aria-hidden="true"></i>
+          @else <i class="fas fa-paw" aria-hidden="true"></i>
           @endif
         </div>
         <div class="gestation-body">

@@ -320,14 +320,14 @@
       padding:20px; text-align:center; transition:all .2s; box-shadow:var(--shadow);
     }
     .animal-card:hover { transform:translateY(-3px); border-color:#66bb6a; box-shadow:0 4px 20px rgba(46,125,50,.1); }
-    .animal-emoji { font-size:40px; margin-bottom:8px; }
+    .animal-icon { font-size:40px; margin-bottom:8px; }
     .animal-card h4 { font-size:15px; font-weight:600; color:#1a1a2e; }
     .animal-card p { font-size:12px; color:#6a7a8a; margin-top:4px; }
     .animal-stat { font-size:20px; font-weight:700; color:#2e7d32; margin-top:8px; }
     .livestock-summary-card { padding:14px; min-height:145px; }
-    .livestock-summary-card .animal-emoji { font-size:30px; margin-bottom:4px; }
+    .livestock-summary-card .animal-icon { font-size:30px; margin-bottom:4px; }
     .livestock-summary-card .animal-stat { font-size:18px; margin-top:5px; }
-    .livestock-row-emoji { font-size:20px; margin-right:6px; vertical-align:middle; }
+    .livestock-row-icon { font-size:20px; margin-right:6px; vertical-align:middle; }
     .livestock-actions { white-space:nowrap; vertical-align:middle; }
     .livestock-action-group { display:flex; align-items:center; gap:6px; flex-wrap:nowrap; }
     .livestock-action { width:32px; height:32px; display:inline-flex; align-items:center; justify-content:center; border:0; border-radius:7px; cursor:pointer; transition:all .2s; }

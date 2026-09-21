@@ -8,11 +8,11 @@
       @forelse($weatherUpdates as $weather)
       <div class="stat-card">
         <div class="stat-icon" style="font-size:28px;background:{{ $weather->condition == 'Sunny' ? '#fff3e0' : ($weather->condition == 'Rain' ? '#e3f2fd' : '#f0f2f5') }};">
-          @if($weather->condition == 'Sunny') &#x2600;&#xFE0F;
-          @elseif($weather->condition == 'Rain') &#x1F327;&#xFE0F;
-          @elseif($weather->condition == 'Cloudy') &#x26C5;
-          @elseif($weather->condition == 'Hot') &#x1F324;&#xFE0F;
-          @else &#x1F31E;
+          @if($weather->condition == 'Sunny') <i class="fas fa-sun" aria-hidden="true"></i>
+          @elseif($weather->condition == 'Rain') <i class="fas fa-cloud-rain" aria-hidden="true"></i>
+          @elseif($weather->condition == 'Cloudy') <i class="fas fa-cloud" aria-hidden="true"></i>
+          @elseif($weather->condition == 'Hot') <i class="fas fa-temperature-high" aria-hidden="true"></i>
+          @else <i class="fas fa-cloud-sun" aria-hidden="true"></i>
           @endif
         </div>
         <div class="stat-body">
@@ -21,7 +21,7 @@
         </div>
       </div>
       @empty
-      <div class="stat-card"><div class="stat-icon" style="font-size:28px;background:#f0f2f5;">&#x1F31E;</div><div class="stat-body"><h3>N/A</h3><p>No weather data</p></div></div>
+      <div class="stat-card"><div class="stat-icon" style="font-size:28px;background:#f0f2f5;"><i class="fas fa-cloud-sun" aria-hidden="true"></i></div><div class="stat-body"><h3>N/A</h3><p>No weather data</p></div></div>
       @endforelse
     </div>
     <div class="card" style="margin-top:8px;">

@@ -58,7 +58,7 @@
     }
     
     function deleteDoctor(id) {
-        if (!confirm('⚠️ Are you sure you want to delete this Doctor?')) return;
+        if (!confirm('Are you sure you want to delete this Doctor?')) return;
         fetch(`${API_URL}/doctors/${id}`, { method: 'DELETE', headers: getHeaders() })
             .then(response => response.json())
             .then(data => {

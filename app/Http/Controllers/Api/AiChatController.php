@@ -45,6 +45,7 @@ class AiChatController extends Controller
         $validator = Validator::make($request->all(), [
             'message' => 'required|string|max:4000',
             'language' => 'nullable|string|max:50',
+            'session_id' => 'nullable|string|max:100',
         ]);
 
         if ($validator->fails()) {
@@ -54,6 +55,7 @@ class AiChatController extends Controller
         $userId = $request->user()->id ?? 1;
         $message = trim((string) $request->input('message'));
         $language = $request->input('language') ?: 'English';
+        $sessionId = $request->input('session_id') ?: 'user_'.$userId.'_'.now()->format('YmdHis');
 
         // Build conversation context before we persist the new turn.
         $context = [];
@@ -83,6 +85,7 @@ class AiChatController extends Controller
                 'sender' => 'user',
                 'message' => $message,
                 'language' => $language,
+                'session_id' => $sessionId,
             ]);
 
             $aiMsg = AiChatMessage::create([
@@ -90,6 +93,7 @@ class AiChatController extends Controller
                 'sender' => 'ai',
                 'message' => $reply,
                 'language' => $language,
+                'session_id' => $sessionId,
                 'metadata' => ['source' => $result['source']],
             ]);
         } catch (Throwable $e) {

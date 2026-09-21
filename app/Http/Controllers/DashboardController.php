@@ -20,6 +20,7 @@ use App\Models\Message;
 use App\Models\Setting;
 use App\Models\Disease;
 use App\Models\ExtensionWorker;
+use App\Models\AiChatMessage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -63,6 +64,7 @@ class DashboardController extends Controller
         $marketplaceListings = $this->getMarketplaceListings();
         $settings = $this->getSettings();
         $weatherAdvisories = $this->getWeatherAdvisories();
+        $aiChatConversations = $this->getAiChatConversations($request);
 
         // Filters and collection expected by the decision-support dashboard page.
         $resources = $decisionSupport;
@@ -148,6 +150,7 @@ class DashboardController extends Controller
             'marketplaceListings',
             'settings',
             'weatherAdvisories',
+            'aiChatConversations',
             'months',
             'sicknessData',
             'userData',
@@ -335,6 +338,86 @@ class DashboardController extends Controller
     private function getNotifications()
     {
         return Notification::orderBy('created_at', 'desc')->limit(10)->get();
+    }
+
+    public function deleteAiConversation(string $key)
+    {
+        if (str_starts_with($key, 'message-')) {
+            AiChatMessage::whereKey((int) substr($key, 8))->delete();
+        } else {
+            AiChatMessage::where('session_id', $key)->delete();
+        }
+
+        return redirect()
+            ->route('dashboard', ['page' => 'aichat'])
+            ->with('success', 'AI conversation deleted successfully.');
+    }
+
+    private function getAiChatConversations(Request $request): array
+    {
+        $messages = AiChatMessage::with('user')
+            ->orderBy('created_at')
+            ->orderBy('id')
+            ->get();
+
+        $conversations = $messages->groupBy(function (AiChatMessage $message) {
+            return $message->session_id ?: 'message-'.$message->id;
+        })->map(function ($items, $key) {
+            $userMessages = $items->where('sender', 'user');
+            $content = $userMessages->pluck('message')->filter()->implode("\n");
+            $first = $items->first();
+            $last = $items->last();
+            $seconds = max(0, $first->created_at->diffInSeconds($last->created_at));
+
+            return [
+                'key' => $key,
+                'user_id' => $first->user_id,
+                'user_name' => optional($first->user)->name ?: 'Unknown user',
+                'content' => $content ?: $items->pluck('message')->filter()->implode("\n"),
+                'category' => $this->aiConversationCategory($content),
+                'duration' => $this->formatAiDuration($seconds),
+                'message_count' => $items->count(),
+                'last_activity' => $last->created_at,
+            ];
+        })->sortByDesc('last_activity')->values();
+
+        $category = $request->string('ai_category')->toString();
+        $userId = $request->string('ai_user_id')->toString();
+        $search = strtolower($request->string('ai_search')->toString());
+
+        return $conversations->filter(function (array $conversation) use ($category, $userId, $search) {
+            return ($category === '' || $conversation['category'] === $category)
+                && ($userId === '' || (string) $conversation['user_id'] === $userId)
+                && ($search === '' || str_contains(strtolower($conversation['content']), $search));
+        })->values()->all();
+    }
+
+    private function aiConversationCategory(string $content): string
+    {
+        $text = strtolower($content);
+        $categories = [
+            'Health and Disease' => ['sick', 'disease', 'symptom', 'treat', 'medicine', 'fever', 'cough', 'diarrhea', 'wound'],
+            'Feeding and Nutrition' => ['feed', 'feeding', 'nutrition', 'fodder', 'pasture', 'grazing', 'ration'],
+            'Breeding' => ['breed', 'breeding', 'heat', 'pregnan', 'mating', 'calving', 'lambing', 'kidding'],
+            'Vaccination' => ['vaccin', 'immuni', 'deworm'],
+            'Markets and Prices' => ['market', 'price', 'sell', 'buyer', 'cost'],
+        ];
+
+        foreach ($categories as $name => $keywords) {
+            foreach ($keywords as $keyword) {
+                if (str_contains($text, $keyword)) return $name;
+            }
+        }
+
+        return 'General Farm Advice';
+    }
+
+    private function formatAiDuration(int $seconds): string
+    {
+        if ($seconds < 60) return $seconds.' sec';
+        $minutes = intdiv($seconds, 60);
+        if ($minutes < 60) return $minutes.' min';
+        return intdiv($minutes, 60).' hr '.($minutes % 60).' min';
     }
 
     private function getMarketplaceListings()

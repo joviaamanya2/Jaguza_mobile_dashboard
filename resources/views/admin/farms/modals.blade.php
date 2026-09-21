@@ -58,7 +58,7 @@
     }
     
     function deleteFarm(id) {
-        if (!confirm('⚠️ Are you sure you want to delete this Farm?')) return;
+        if (!confirm('Are you sure you want to delete this Farm?')) return;
         fetch(`${API_URL}/farms/${id}`, { method: 'DELETE', headers: getHeaders() })
             .then(response => response.json())
             .then(data => {

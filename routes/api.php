@@ -36,6 +36,11 @@ use Illuminate\Support\Facades\Route;
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
+// Forgot password: request a code, verify it, then set a new password.
+Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:5,1');
+Route::post('/verify-reset-code', [AuthController::class, 'verifyResetCode'])->middleware('throttle:10,1');
+Route::post('/reset-password', [AuthController::class, 'resetPassword'])->middleware('throttle:10,1');
+
 // Public Decision Support routes (no auth needed for viewing)
 Route::prefix('decision-support')->name('api.decision-support.')->group(function () {
     Route::get('resources', [DecisionSupportController::class, 'index'])->name('index');

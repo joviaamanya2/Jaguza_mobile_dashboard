@@ -33,6 +33,14 @@ class Disease extends Model
     const SEVERITIES = ['low', 'medium', 'high', 'critical'];
     const RISKS = ['low', 'medium', 'high'];
 
+    public function getThumbnailAttribute($value): ?string
+    {
+        if (!$value) return null;
+        return filter_var($value, FILTER_VALIDATE_URL)
+            ? $value
+            : url('storage/' . ltrim($value, '/'));
+    }
+
     public function scopeActive($query)
     {
         return $query->where('is_active', true);

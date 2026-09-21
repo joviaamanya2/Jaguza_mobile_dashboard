@@ -224,7 +224,7 @@ function editDoctor(id) {
 }
 
 function deleteDoctor(id) {
-    if (!confirm('⚠️ Are you sure you want to delete this doctor? This will also delete their user account.')) return;
+    if (!confirm('Are you sure you want to delete this doctor? This will also delete their user account.')) return;
     
     fetch(`${ADMIN_URL}/doctors/${id}`, {
         method: 'DELETE',
@@ -384,7 +384,7 @@ function editExtensionWorker(id) {
 }
 
 function deleteExtensionWorker(id) {
-    if (!confirm('⚠️ Are you sure you want to delete this extension worker? This will also delete their user account.')) return;
+    if (!confirm('Are you sure you want to delete this extension worker? This will also delete their user account.')) return;
     
     fetch(`${ADMIN_URL}/extension-workers/${id}`, {
         method: 'DELETE',
@@ -731,7 +731,7 @@ function editUser(id) {
 }
 
 function deleteUser(id) {
-    if (!confirm('⚠️ Are you sure you want to delete this user?')) return;
+    if (!confirm('Are you sure you want to delete this user?')) return;
     
     fetch(`${API_URL}/users/${id}`, {
         method: 'DELETE',
@@ -980,7 +980,7 @@ function editReport(id) {
 }
 
 function deleteReport(id) {
-    if (!confirm('⚠️ Are you sure you want to delete this sickness report?')) return;
+    if (!confirm('Are you sure you want to delete this sickness report?')) return;
 
     fetch(`${API_URL}/reports/${id}`, { method: 'DELETE', headers: getHeaders() })
     .then(response => response.json())
@@ -1351,7 +1351,49 @@ function openAddGestationModal() { alert('Add Gestation functionality coming soo
 function openAddNotificationModal() { alert('Send Notification functionality coming soon!'); }
 function openComposeMessageModal() { alert('Compose Message functionality coming soon!'); }
 function openAddVaccinationModal() { alert('Add Vaccination functionality coming soon!'); }
-function openAddListingModal() { alert('Add Listing functionality coming soon!'); }
+function openAddListingModal() {
+    const form = document.getElementById('marketplaceForm');
+    if (form) form.reset();
+    openModal('marketplaceModal');
+}
+
+async function saveMarketplaceListing() {
+    const submitButton = document.getElementById('marketplaceSubmitBtn');
+    const imageInput = document.getElementById('marketplace_image');
+    const formData = new FormData();
+    formData.append('title', document.getElementById('marketplace_title').value.trim());
+    formData.append('category', document.getElementById('marketplace_category').value);
+    formData.append('price', document.getElementById('marketplace_price').value);
+    formData.append('location', document.getElementById('marketplace_location').value.trim());
+    formData.append('description', document.getElementById('marketplace_description').value.trim());
+    if (imageInput.files.length > 0) formData.append('image', imageInput.files[0]);
+
+    submitButton.disabled = true;
+    submitButton.textContent = 'Saving...';
+    try {
+        const response = await fetch('/admin/marketplace', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json'
+            },
+            body: formData
+        });
+        const data = await response.json();
+        if (!response.ok || !data.success) {
+            const errors = data.errors ? Object.values(data.errors).flat().join(' ') : data.message;
+            throw new Error(errors || 'Could not create listing.');
+        }
+        closeModal('marketplaceModal');
+        showToast('Listing added successfully. It is now visible in the mobile app.');
+        setTimeout(() => location.reload(), 700);
+    } catch (error) {
+        showToast(error.message || 'Could not create listing.', 'error');
+    } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = 'Add Listing';
+    }
+}
 function openAddDecisionModal() { alert('Add Decision Article functionality coming soon!'); }
 
 function refreshWeather() { alert('Refreshing weather data...'); }
@@ -1455,7 +1497,7 @@ function editFarm(id) {
 }
 
 function deleteFarm(id) {
-    if (!confirm('⚠️ Are you sure you want to delete this farm? This will also remove all associated animals.')) return;
+    if (!confirm('Are you sure you want to delete this farm? This will also remove all associated animals.')) return;
     
     fetch(`${ADMIN_URL}/farms/${id}`, {
         method: 'DELETE',

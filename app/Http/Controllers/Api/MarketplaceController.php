@@ -12,9 +12,18 @@ class MarketplaceController extends Controller
 {
     public function index()
     {
+        $listings = MarketplaceListing::with('seller')->get();
+        $listings->each(function (MarketplaceListing $listing) {
+            $listing->images = collect($listing->images ?? [])->map(function ($image) {
+                return filter_var($image, FILTER_VALIDATE_URL)
+                    ? $image
+                    : url('storage/' . ltrim($image, '/'));
+            })->values()->all();
+        });
+
         return response()->json([
             'success' => true,
-            'data' => MarketplaceListing::with('seller')->get()
+            'data' => $listings,
         ]);
     }
 

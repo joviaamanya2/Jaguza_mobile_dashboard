@@ -16,14 +16,14 @@ function addAnimalCategoryRow() {
     row.innerHTML = `
         <select class="animal-type-select form-control" style="flex:2;">
             <option value="">Select Animal Type</option>
-            <option value="cattle">🐄 Cattle</option>
-            <option value="goat">🐐 Goats</option>
-            <option value="sheep">🐑 Sheep</option>
-            <option value="pig">🐖 Pigs</option>
-            <option value="poultry">🐔 Poultry</option>
-            <option value="rabbit">🐰 Rabbits</option>
-            <option value="horse">🐴 Horses</option>
-            <option value="fish">🐟 Fish</option>
+            <option value="cattle">Cattle</option>
+            <option value="goat">Goats</option>
+            <option value="sheep">Sheep</option>
+            <option value="pig">Pigs</option>
+            <option value="poultry">Poultry</option>
+            <option value="rabbit">Rabbits</option>
+            <option value="horse">Horses</option>
+            <option value="fish">Fish</option>
             <option value="other">Other</option>
         </select>
         <input type="number" class="animal-count-input form-control" style="flex:1;min-width:70px;" placeholder="Count" min="0" value="0">
@@ -141,14 +141,14 @@ function resetFarmForm() {
         <div class="animal-category-row">
             <select class="animal-type-select form-control" style="flex:2;">
                 <option value="">Select Animal Type</option>
-                <option value="cattle">🐄 Cattle</option>
-                <option value="goat">🐐 Goats</option>
-                <option value="sheep">🐑 Sheep</option>
-                <option value="pig">🐖 Pigs</option>
-                <option value="poultry">🐔 Poultry</option>
-                <option value="rabbit">🐰 Rabbits</option>
-                <option value="horse">🐴 Horses</option>
-                <option value="fish">🐟 Fish</option>
+                <option value="cattle">Cattle</option>
+                <option value="goat">Goats</option>
+                <option value="sheep">Sheep</option>
+                <option value="pig">Pigs</option>
+                <option value="poultry">Poultry</option>
+                <option value="rabbit">Rabbits</option>
+                <option value="horse">Horses</option>
+                <option value="fish">Fish</option>
                 <option value="other">Other</option>
             </select>
             <input type="number" class="animal-count-input form-control" style="flex:1;min-width:70px;" placeholder="Count" min="0" value="0">
@@ -201,14 +201,14 @@ function editFarm(id) {
                     row.innerHTML = `
                         <select class="animal-type-select form-control" style="flex:2;">
                             <option value="">Select Animal Type</option>
-                            <option value="cattle" ${animal.type === 'cattle' ? 'selected' : ''}>🐄 Cattle</option>
-                            <option value="goat" ${animal.type === 'goat' ? 'selected' : ''}>🐐 Goats</option>
-                            <option value="sheep" ${animal.type === 'sheep' ? 'selected' : ''}>🐑 Sheep</option>
-                            <option value="pig" ${animal.type === 'pig' ? 'selected' : ''}>🐖 Pigs</option>
-                            <option value="poultry" ${animal.type === 'poultry' ? 'selected' : ''}>🐔 Poultry</option>
-                            <option value="rabbit" ${animal.type === 'rabbit' ? 'selected' : ''}>🐰 Rabbits</option>
-                            <option value="horse" ${animal.type === 'horse' ? 'selected' : ''}>🐴 Horses</option>
-                            <option value="fish" ${animal.type === 'fish' ? 'selected' : ''}>🐟 Fish</option>
+                            <option value="cattle" ${animal.type === 'cattle' ? 'selected' : ''}>Cattle</option>
+                            <option value="goat" ${animal.type === 'goat' ? 'selected' : ''}>Goats</option>
+                            <option value="sheep" ${animal.type === 'sheep' ? 'selected' : ''}>Sheep</option>
+                            <option value="pig" ${animal.type === 'pig' ? 'selected' : ''}>Pigs</option>
+                            <option value="poultry" ${animal.type === 'poultry' ? 'selected' : ''}>Poultry</option>
+                            <option value="rabbit" ${animal.type === 'rabbit' ? 'selected' : ''}>Rabbits</option>
+                            <option value="horse" ${animal.type === 'horse' ? 'selected' : ''}>Horses</option>
+                            <option value="fish" ${animal.type === 'fish' ? 'selected' : ''}>Fish</option>
                             <option value="other" ${animal.type === 'other' ? 'selected' : ''}>Other</option>
                         </select>
                         <input type="number" class="animal-count-input form-control" style="flex:1;min-width:70px;" placeholder="Count" min="0" value="${animal.count || 0}">
@@ -234,7 +234,7 @@ function editFarm(id) {
 }
 
 function deleteFarm(id) {
-    if (!confirm('⚠️ Are you sure you want to delete this farm? This will also remove all associated animals.')) return;
+    if (!confirm('Are you sure you want to delete this farm? This will also remove all associated animals.')) return;
     
     fetch(`${API_URL}/farms/${id}`, {
         method: 'DELETE',

@@ -46,6 +46,24 @@ class Video extends Model
         return $this->belongsTo(VideoCategory::class);
     }
 
+    public function getImageUrlAttribute($value): ?string
+    {
+        return $this->absoluteMediaUrl($value);
+    }
+
+    public function getThumbnailUrlAttribute($value): ?string
+    {
+        return $this->absoluteMediaUrl($value);
+    }
+
+    private function absoluteMediaUrl(?string $value): ?string
+    {
+        if (!$value) return null;
+        return filter_var($value, FILTER_VALIDATE_URL)
+            ? $value
+            : url('storage/' . ltrim($value, '/'));
+    }
+
     public function uploader()
     {
         return $this->belongsTo(User::class, 'uploaded_by');

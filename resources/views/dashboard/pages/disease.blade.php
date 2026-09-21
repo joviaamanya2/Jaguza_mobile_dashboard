@@ -16,7 +16,7 @@
             <tr>
               <td class="disease-name-cell">
                 @if($disease->thumbnail)
-                  <img src="{{ asset('storage/' . $disease->thumbnail) }}" alt="{{ $disease->name }} thumbnail" class="disease-thumbnail">
+                  <img src="{{ $disease->thumbnail }}" alt="{{ $disease->name }} thumbnail" class="disease-thumbnail">
                 @else
                   <span class="disease-thumbnail disease-thumbnail-placeholder"><i class="fas fa-virus"></i></span>
                 @endif

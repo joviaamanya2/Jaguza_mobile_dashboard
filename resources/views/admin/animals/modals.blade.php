@@ -58,7 +58,7 @@
     }
     
     function deleteAnimal(id) {
-        if (!confirm('⚠️ Are you sure you want to delete this Animal?')) return;
+        if (!confirm('Are you sure you want to delete this Animal?')) return;
         fetch(`${API_URL}/animals/${id}`, { method: 'DELETE', headers: getHeaders() })
             .then(response => response.json())
             .then(data => {

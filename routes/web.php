@@ -109,6 +109,10 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::put('/marketplace/{id}', [\App\Http\Controllers\Api\MarketplaceController::class, 'update']);
         Route::delete('/marketplace/{id}', [\App\Http\Controllers\Api\MarketplaceController::class, 'destroy']);
 
+        // AI chat administration
+        Route::delete('/ai-chat/{key}', [DashboardController::class, 'deleteAiConversation'])
+            ->name('ai-chat.destroy');
+
         // Notifications
         Route::post('/notifications', [\App\Http\Controllers\Api\NotificationController::class, 'store']);
         Route::delete('/notifications/{id}', [\App\Http\Controllers\Api\NotificationController::class, 'destroy']);

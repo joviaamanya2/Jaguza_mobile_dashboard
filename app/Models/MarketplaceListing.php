@@ -31,7 +31,7 @@ class MarketplaceListing extends Model
     ];
 
     const STATUSES = ['active', 'pending', 'sold', 'expired'];
-    const CATEGORIES = ['livestock', 'poultry', 'feed', 'medicine', 'equipment', 'services', 'other'];
+    const CATEGORIES = ['livestock', 'poultry', 'feed', 'medicine', 'equipment', 'housing', 'services', 'other'];
 
     public function seller()
     {

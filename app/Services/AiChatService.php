@@ -189,22 +189,29 @@ class AiChatService
 
     private function matchDisease(string $text): ?Disease
     {
-        $words = collect(preg_split('/\s+/', $text))
-            ->filter(fn ($word) => strlen($word) > 3)
-            ->values();
+        try {
+            $words = collect(preg_split('/\s+/', $text))
+                ->filter(fn ($word) => strlen($word) > 3)
+                ->values();
 
-        if ($words->isEmpty()) {
+            if ($words->isEmpty()) {
+                return null;
+            }
+
+            return Disease::active()->get()->first(function (Disease $disease) use ($words) {
+                $haystack = strtolower(implode(' ', [
+                    $disease->name,
+                    $disease->species_affected,
+                    $disease->symptoms,
+                ]));
+
+                return $words->contains(fn ($word) => str_contains($haystack, $word));
+            });
+        } catch (Throwable $e) {
+            Log::warning('Jaguza AI chat: disease catalog unavailable.', [
+                'error' => $e->getMessage(),
+            ]);
             return null;
         }
-
-        return Disease::active()->get()->first(function (Disease $disease) use ($words) {
-            $haystack = strtolower(implode(' ', [
-                $disease->name,
-                $disease->species_affected,
-                $disease->symptoms,
-            ]));
-
-            return $words->contains(fn ($word) => str_contains($haystack, $word));
-        });
     }
 }

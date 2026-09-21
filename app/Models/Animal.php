@@ -67,6 +67,14 @@ class Animal extends Model
         'is_active' => 'boolean',
     ];
 
+    public function getPhotoAttribute($value): ?string
+    {
+        if (!$value) return null;
+        return filter_var($value, FILTER_VALIDATE_URL)
+            ? $value
+            : url('storage/' . ltrim($value, '/'));
+    }
+
     public function farm()
     {
         return $this->belongsTo(Farm::class);

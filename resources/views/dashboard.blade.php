@@ -145,6 +145,7 @@
     @include('dashboard.modals.video')
     @include('dashboard.modals.video-category')
     @include('dashboard.modals.advertisement')
+    @include('dashboard.modals.marketplace')
 
     <!-- ===== SCRIPTS ===== -->
     <script>

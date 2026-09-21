@@ -10,7 +10,7 @@
         @if($ad->image_url)
         <div class="ad-banner" style="padding:0;overflow:hidden;"><img src="{{ $ad->image_url }}" alt="{{ $ad->title }}" style="width:100%;height:100%;object-fit:cover;"></div>
         @else
-        <div class="ad-banner">📢</div>
+        <div class="ad-banner"><i class="fas fa-bullhorn" aria-hidden="true"></i></div>
         @endif
         <div class="ad-info">
           <h4>{{ $ad->title }}</h4>
