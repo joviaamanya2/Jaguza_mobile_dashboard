@@ -22,6 +22,9 @@
       <div class="nav-icon"><i class="fas fa-users"></i></div><span class="nav-label">Users</span>
       <span class="nav-badge">{{ number_format($stats['total_users'] ?? 0) }}</span>
     </a>
+    <a class="nav-item" href="{{ route('admin.admins.create') }}">
+      <div class="nav-icon"><i class="fas fa-user-shield"></i></div><span class="nav-label">Create Admin</span>
+    </a>
     <a class="nav-item" id="nav-doctors" onclick="navigate('doctors','Veterinary Doctors')">
       <div class="nav-icon"><i class="fas fa-stethoscope"></i></div><span class="nav-label">Doctors</span>
     </a>
@@ -64,8 +67,8 @@
     <a class="nav-item" id="nav-marketplace" onclick="navigate('marketplace','Market Place')">
       <div class="nav-icon"><i class="fas fa-store"></i></div><span class="nav-label">Market Place</span>
     </a>
-    <a class="nav-item" id="nav-videos" onclick="navigate('videos','Videos')">
-      <div class="nav-icon"><i class="fas fa-play-circle"></i></div><span class="nav-label">Videos</span>
+    <a class="nav-item" id="nav-videos" onclick="navigate('videos','Media')">
+      <div class="nav-icon"><i class="fas fa-photo-video"></i></div><span class="nav-label">Media</span>
     </a>
     <a class="nav-item" id="nav-ads" onclick="navigate('ads','Advertisements')">
       <div class="nav-icon"><i class="fas fa-bullhorn"></i></div><span class="nav-label">Advertisements</span>

@@ -98,7 +98,10 @@
                 <label class="form-check-label" for="remember">Remember me</label>
             </div>
 
-            <button type="submit" class="btn btn-primary w-100">Login</button>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-fill">Sign In</button>
+                <a href="{{ route('admin.signup') }}" class="btn btn-outline-success flex-fill">Register</a>
+            </div>
 
             <div class="mt-3 text-center">
                 @if (Route::has('password.request'))
@@ -108,10 +111,6 @@
                 @endif
             </div>
 
-            <div class="mt-3 text-center text-muted">
-                Need an admin account?
-                <a href="{{ route('admin.signup') }}" class="text-decoration-none" style="color: #2e7d32;">Sign up</a>
-            </div>
         </form>
     </div>
 </body>

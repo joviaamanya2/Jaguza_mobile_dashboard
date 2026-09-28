@@ -34,6 +34,9 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     // Admin CRUD routes
     Route::prefix('admin')->name('admin.')->group(function () {
+        Route::get('/admins/create', [AuthController::class, 'showAdminCreate'])->name('admins.create');
+        Route::post('/admins', [AuthController::class, 'createAdmin'])->name('admins.store');
+
         // Users
         Route::post('/users', [\App\Http\Controllers\Api\UserController::class, 'store']);
         Route::put('/users/{id}', [\App\Http\Controllers\Api\UserController::class, 'update']);

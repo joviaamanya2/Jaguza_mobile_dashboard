@@ -45,7 +45,7 @@
         <div class="stat-icon" style="background:#e8f5e9;color:#2e7d32;"><i class="fas fa-play-circle"></i></div>
         <div class="stat-body">
           <h3>{{ number_format($stats['total_videos'] ?? 0) }}</h3>
-          <p>Videos Published</p>
+          <p>Media Published</p>
           <div class="stat-trend trend-up"><i class="fas fa-arrow-up"></i> {{ number_format($newVideosThisWeek ?? 0) }} this week</div>
         </div>
       </div>
@@ -110,7 +110,7 @@
       </div>
       <div class="quick-card" onclick="openAddVideoModal()">
         <div class="qi" style="background:#e8f5e9;color:#2e7d32;"><i class="fas fa-upload"></i></div>
-        <span>Upload Video</span>
+        <span>Upload Media</span>
       </div>
       <div class="quick-card" onclick="openAddGestationModal()">
         <div class="qi" style="background:#fce4ec;color:#c62828;"><i class="fas fa-baby"></i></div>

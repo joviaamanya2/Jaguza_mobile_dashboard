@@ -2,7 +2,6 @@
 // FARM CRUD FUNCTIONS WITH ANIMAL CATEGORIES
 // ============================================
 
-let selectedFacilities = [];
 let animalRows = 1;
 
 // ============================================

@@ -35,6 +35,8 @@ const diseaseLabels = @json($diseaseLabels ?? []);
 const diseaseCounts = @json($diseaseCounts ?? []);
 
 function renderDashboardCharts() {
+    if (!document.getElementById('sickChart')) return;
+
     new Chart(document.getElementById('sickChart'), {
         type: 'bar',
         data: {
@@ -120,6 +122,8 @@ function renderDashboardCharts() {
 }
 
 function renderAnalyticsCharts() {
+    if (!document.getElementById('userGrowthChart')) return;
+
     new Chart(document.getElementById('userGrowthChart'), {
         type:'line',
         data:{
@@ -142,9 +146,10 @@ function renderAnalyticsCharts() {
         }
     });
 
-    if (diseaseLabels.length > 0) {
+    const diseaseChart = document.getElementById('diseaseChart');
+    if (diseaseLabels.length > 0 && diseaseChart) {
         const diseaseColors = ['#ef5350','#ffa726','#42a5f5','#ab47bc','#66bb6a','#78909c'];
-        new Chart(document.getElementById('diseaseChart'), {
+        new Chart(diseaseChart, {
             type:'pie',
             data:{
                 labels: diseaseLabels,
@@ -1052,6 +1057,21 @@ function saveReport() {
 
 function openAddDiseaseModal() { openModal('diseaseModal'); }
 function openAddFarmModal() { alert('Add Farm functionality coming soon!'); }
+function filterMediaCategory(button) {
+    const page = document.getElementById('page-videos');
+    const categoryId = button.dataset.categoryId;
+
+    page.querySelectorAll('.media-category-filter').forEach(filter => {
+        const isSelected = filter === button;
+        filter.classList.toggle('active', isSelected);
+        filter.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+    });
+
+    page.querySelectorAll('.video-card[data-category-id]').forEach(card => {
+        card.hidden = categoryId !== 'all' && card.dataset.categoryId !== categoryId;
+    });
+}
+
 function resetVideoForm() {
     const form = document.getElementById('videoForm');
     if (form) form.reset();
@@ -1077,6 +1097,9 @@ function toggleMediaTypeFields() {
     document.querySelectorAll('#videoForm .media-type-image').forEach(el => {
         el.style.display = type === 'image' ? '' : 'none';
     });
+    document.getElementById('videoFeaturedLabel').textContent = type === 'image'
+        ? 'Feature this image'
+        : 'Feature this video';
 }
 
 function toggleNewCategoryInput() {
@@ -1131,12 +1154,18 @@ async function saveVideo() {
     const imageFile = document.getElementById('video_image_file').files[0];
     const videoUrl = document.getElementById('video_url').value.trim();
     const imageUrl = document.getElementById('video_image_url').value.trim();
+    const thumbnailFile = document.getElementById('video_thumbnail_file').files[0];
+    const thumbnailUrl = document.getElementById('video_thumbnail').value.trim();
     if (mediaType === 'video' && !videoFile && !videoUrl) {
         showToast('Select a video file or provide a video URL.', 'error');
         return;
     }
     if (mediaType === 'image' && !imageFile && !imageUrl) {
         showToast('Select an image file or provide an image URL.', 'error');
+        return;
+    }
+    if (mediaType === 'video' && !thumbnailFile && !thumbnailUrl) {
+        showToast('Add a thumbnail image so the video preview appears in the app.', 'error');
         return;
     }
 
@@ -1150,15 +1179,16 @@ async function saveVideo() {
         payload.append('description', document.getElementById('video_description').value.trim());
         payload.append('media_type', mediaType);
         payload.append('category_id', categoryId);
-        payload.append('duration', document.getElementById('video_duration').value.trim());
-        payload.append('platform', document.getElementById('video_platform').value);
-        payload.append('tags', document.getElementById('video_tags').value);
+        if (mediaType === 'video') {
+            payload.append('duration', document.getElementById('video_duration').value.trim());
+            payload.append('platform', document.getElementById('video_platform').value);
+            payload.append('tags', document.getElementById('video_tags').value);
+        }
         payload.append('is_featured', document.getElementById('video_featured').checked ? '1' : '0');
         payload.append('is_published', document.getElementById('video_published').checked ? '1' : '0');
         if (mediaType === 'video') {
             payload.append('video_url', videoUrl);
-            payload.append('thumbnail_url', document.getElementById('video_thumbnail').value.trim());
-            const thumbnailFile = document.getElementById('video_thumbnail_file').files[0];
+            payload.append('thumbnail_url', thumbnailUrl);
             if (videoFile) payload.append('video_file', videoFile);
             if (thumbnailFile) payload.append('thumbnail_file', thumbnailFile);
         } else {

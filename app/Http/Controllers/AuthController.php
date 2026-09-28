@@ -38,6 +38,31 @@ class AuthController extends Controller
         return redirect()->route('login')->with('status', 'Admin account created successfully. You can now sign in.');
     }
 
+    public function showAdminCreate()
+    {
+        return view('dashboard.admin-create');
+    }
+
+    public function createAdmin(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ]);
+
+        User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'role' => User::ROLE_ADMIN,
+            'is_active' => true,
+            'is_verified' => true,
+        ]);
+
+        return redirect()->route('dashboard')->with('status', 'Admin account created successfully.');
+    }
+
     public function login(Request $request)
     {
         $credentials = $request->validate([

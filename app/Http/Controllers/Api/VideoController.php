@@ -44,6 +44,17 @@ class VideoController extends Controller
             return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
         }
 
+        if (
+            $request->input('media_type', 'video') === 'video' &&
+            !$request->filled('thumbnail_url') &&
+            !$request->hasFile('thumbnail_file')
+        ) {
+            return response()->json([
+                'success' => false,
+                'errors' => ['thumbnail' => ['A thumbnail image is required for videos.']],
+            ], 422);
+        }
+
         $imageUrl = $request->input('image_url');
         if ($request->hasFile('image_file')) {
             $imageUrl = Storage::disk('public')->url(
